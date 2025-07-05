@@ -22,7 +22,7 @@ const Login = ({ onLogin }) => {
     setError(null);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/login', credentials);
+      const response = await axios.post('https://vetpet-sandbox-1.onrender.com', credentials);
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);

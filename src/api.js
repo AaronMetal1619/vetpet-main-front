@@ -1,4 +1,4 @@
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = 'https://vetpet-sandbox-1.onrender.com';
 export const GOOGLE_MAPS_API_KEY = 'AIzaSyBzqS6Mp_YH7LF30DX23LB4CzJDAN09TDA';
 
 // Obtener productos
