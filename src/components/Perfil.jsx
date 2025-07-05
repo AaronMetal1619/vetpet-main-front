@@ -29,7 +29,7 @@ function Perfil() {
     const token = localStorage.getItem("token");
     if (token) {
       axios
-        .get("https://vetpet-sandbox-1.onrender.com", {
+        .get("https://vetpet-sandbox-1.onrender.com/api/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -94,7 +94,7 @@ function Perfil() {
 
     try {
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/update-profile/${userData.id}`,
+        `https://vetpet-sandbox-1.onrender.com/api/update-profile/${userData.id}`,
         formData,
         {
           headers: {

@@ -22,7 +22,7 @@ function App() {
     const token = localStorage.getItem('token');
     console.log("Token recuperado: ", token); // Log para verificar el token
     if (token) {
-      axios.get('https://vetpet-sandbox-1.onrender.com', {
+      axios.get('https://vetpet-sandbox-1.onrender.com/api/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(response => {
