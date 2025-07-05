@@ -19,7 +19,7 @@ const Register = ({ onRegister }) => {
       console.log("Enviando datos de registro: ", formData); // Log para ver los datos que se envían
       const response = await axios.post(
         'https://vetpet-sandbox-1.onrender.com/api/register',
-        JSON.stringify(formData),
+        formData,
         {
           headers: {
             'Content-Type': 'application/json',
