@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vetpet-frontend
+    env: docker
+    dockerfilePath: frontend/Dockerfile
+    plan: starter
+    buildCommand: ""
+    startCommand: ""
+    autoDeploy: true
+    branch: main
+    rootDir: frontend
+    port: 80
