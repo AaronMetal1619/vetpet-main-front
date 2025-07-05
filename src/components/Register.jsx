@@ -18,14 +18,16 @@ const Register = ({ onRegister }) => {
     try {
       console.log("Enviando datos de registro: ", formData); // Log para ver los datos que se envían
       const response = await axios.post(
-        'https://vetpet-sandbox-1.onrender.com/api/register',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      'https://vetpet-sandbox-1.onrender.com/api/register',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true, // 🔥 Importante si supports_credentials = true en Laravel
+      }
+    );
+
 
       console.log("Respuesta del servidor: ", response.data); // Log para ver la respuesta del servidor
 
