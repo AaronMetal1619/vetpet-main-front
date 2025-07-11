@@ -24,7 +24,7 @@ const Register = ({ onRegister }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        withCredentials: true, // 🔥 Importante si supports_credentials = true en Laravel
+        withCredentials: false, // 🔥 Importante si supports_credentials = true en Laravel
       }
     );
 
