@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './components/Servicios.css'; // 👈 Asegúrate de crear este archivo
+import './Servicios.css'; // 👈 Asegúrate de crear este archivo
 
 const Servicios = () => {
     const [searchQuery, setSearchQuery] = useState('');
