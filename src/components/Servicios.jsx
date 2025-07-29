@@ -31,7 +31,7 @@ const Servicios = () => {
             {/* Header */}
             <header className="text-center mb-5">
                 <h1 className="display-4 fw-bold mb-3" style={{ color: '#3A5A78' }}>Servicios Veterinarios</h1>
-                <p className="lead" style={{ color: '#5C8374' }}>Cuidado experto para tu compañero peludo</p>
+                <p className="lead" style={{ color: '#5C8374' }}> experto para tu compañero peludo</p>
             </header>
 
             {/* Barra de búsqueda */}
