@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { fakeUsers } from '../fakeUsers'; // 👈 importamos los usuarios locales
 
 // Importa las imágenes de ojo
 import eyeOpen from "../assets/eyeOpen.jpg";
@@ -20,6 +21,17 @@ const Login = ({ onLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+     // ✅ 1. Intentar login local
+    const localUser = fakeUsers.find(
+      (u) => u.email === credentials.email && u.password === credentials.password
+    );
+
+    if (localUser) {
+      localStorage.setItem('token', 'fake-token'); // Token falso
+      onLogin(localUser);
+      return;
+    }
 
     try {
       const response = await axios.post('https://vetpet-sandbox-1.onrender.com/api/login', credentials);

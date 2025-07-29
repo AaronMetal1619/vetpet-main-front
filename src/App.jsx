@@ -19,6 +19,28 @@ function App() {
   const [showServicios, setShowServicios] = useState(false); // Nuevo estado para los servicios
   
   useEffect(() => {
+  const token = localStorage.getItem('token');
+  console.log("Token recuperado: ", token);
+
+  if (token && token === 'fake-token') {
+    // Simula un usuario local
+    const localUser = JSON.parse(localStorage.getItem('userLocal'));
+    if (localUser) setUser(localUser);
+  } else if (token) {
+    // Solo si no es fake-token, llamar al backend real
+    axios.get('https://vetpet-sandbox-1.onrender.com/api/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(response => setUser(response.data))
+    .catch(() => {
+      console.log("Error al obtener usuario");
+      localStorage.removeItem('token');
+      setUser(null);
+    });
+  }
+}, []);
+
+  /*useEffect(() => {
     const token = localStorage.getItem('token');
     console.log("Token recuperado: ", token); // Log para verificar el token
     if (token) {
@@ -35,7 +57,7 @@ function App() {
         setUser(null);
       });
     }
-  }, []);
+  }, []);*/
 
   const handleLogout = () => {
     localStorage.removeItem('token');
