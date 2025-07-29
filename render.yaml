@@ -2,7 +2,7 @@ services:
   - type: web
     name: vetpet-frontend
     env: docker
-    dockerfilePath: frontend/Dockerfile
+    dockerfilePath: ./Dockerfile
     plan: starter
     buildCommand: ""
     startCommand: ""
