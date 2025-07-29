@@ -1,74 +1,87 @@
-/* === Estilos mejorados para Servicios.jsx === */
+/* Mantén todos los estilos anteriores y solo cambia estos */
 
-/* Contenedor principal - ahora centrado y con mejor espaciado */
+/* Tarjetas de médicos (estilo original mejorado) */
+
+/* En Servicios.css */
 .servicios-container {
   background-color: #f9f5f0;
   min-height: 100vh;
   padding: 4rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
-/* Contenedor del contenido - fondo pastel y centrado */
 .servicios-content {
-  background-color: #fff9f5; /* Color pastel más claro */
-  border-radius: 16px;
-  padding: 3rem;
-  width: 90%;
   max-width: 1200px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-top: 2rem;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
-/* Header - más destacado */
-.servicios-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 0 1rem;
+/* Grid de tarjetas */
+.row-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
 }
 
-.servicios-header h1 {
-  color: #3a5a78;
-  font-weight: 700;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.servicios-header p {
-  color: #5c8374;
-  font-size: 1.2rem;
-}
-
-/* Barra de búsqueda - más integrada */
-.search-container {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto 3rem;
-}
-
-/* Tarjetas - más consistentes */
-.servicios-card {
-  background-color: #ffffff;
-  border-radius: 12px;
+.servicio-card {
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(58, 90, 120, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  height: 100%;
-}
-
-.servicios-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 24px rgba(58, 90, 120, 0.15);
-}
-
-/* Modal - más destacado */
-.modal-content-custom {
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(92, 131, 116, 0.3);
+  border-radius: 12px;
+  background: white;
   border: none;
+  height: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
 }
 
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.7) !important;
+.servicio-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Contenido de la tarjeta */
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Badge de especialidad */
+.badge-especialidad {
+  background-color: #E8C4C4;
+  color: #C06C84;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Textos de la tarjeta */
+.nombre-medico {
+  color: #3A5A78;
+  margin: 12px 0;
+}
+
+.descripcion-medico {
+  color: #5C8374;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Info de contacto */
+.contacto-info {
+  color: #5C8374;
+  font-size: 0.9rem;
+}
+
+/* Botón de contacto */
+.btn-contactar {
+  background-color: #C06C84;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 8px 20px;
+  transition: all 0.3s;
+}
+
+.btn-contactar:hover {
+  background-color: #A8566B;
+  transform: translateY(-2px);
 }
