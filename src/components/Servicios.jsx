@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import './Servicios.css';
-
+import './Servicios.css'; // 👈 Asegúrate de crear este archivo
 
 const Servicios = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -11,7 +10,6 @@ const Servicios = () => {
     const servicios = [
         { id: 1, especialidad: 'Cardiología', medico: 'Dr. Juan Pérez', descripcion: 'Especialista en enfermedades del corazón de mascotas.', telefono: '123-456-789', correo: 'juan.perez@mail.com' },
         { id: 2, especialidad: 'Dermatología', medico: 'Dra. Laura Gómez', descripcion: 'Experta en problemas de la piel y alergias.', telefono: '234-567-890', correo: 'laura.gomez@mail.com' },
-        // ... (otros servicios)
     ];
 
     const filteredServicios = servicios.filter((servicio) =>
@@ -20,7 +18,7 @@ const Servicios = () => {
     );
 
     const openModal = (medico) => {
-        setSelectedMedico(medico);
+        setSelectedMedico(medico); // 👈 ahora guarda el objeto completo
         setShowModal(true);
     };
 
@@ -29,7 +27,7 @@ const Servicios = () => {
     };
 
     return (
-         <div className="container py-4 servicios-container"> {/* Fondo cálido claro */}
+        <div className="container py-4 servicios-container"> {/* 👈 añadimos la clase del CSS */}
             {/* Header */}
             <header className="text-center mb-5">
                 <h1 className="display-4 fw-bold mb-3" style={{ color: '#3A5A78' }}>Servicios Veterinarios</h1>
@@ -89,8 +87,7 @@ const Servicios = () => {
                                             color: 'white',
                                             border: 'none'
                                         }}
-                                        onClick={() => openModal(servicio)}
-                                        //onClick={() => openModal(servicio.medico)}
+                                        onClick={() => openModal(servicio)} // 👈 ahora enviamos todo el objeto
                                     >
                                         Contactar
                                     </button>
@@ -102,22 +99,13 @@ const Servicios = () => {
             </div>
 
             {/* Modal */}
-            {showModal && (
+            {showModal && selectedMedico && (
                 <div
-                    className="modal-backdrop fade show d-flex align-items-center justify-content-center"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+                    className="modal-backdrop fade show d-flex align-items-center justify-content-center modal-backdrop-custom"
                 >
-                    <div
-                        className="modal-content border-0 p-4"
-                        style={{
-                            maxWidth: '500px',
-                            backgroundColor: '#FFFFFF',
-                            borderRadius: '12px',
-                            boxShadow: '0 5px 20px rgba(92, 131, 116, 0.2)'
-                        }}
-                    >
+                    <div className="modal-content modal-content-custom">
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h3 style={{ color: '#3A5A78' }}>Agendar con {selectedMedico}</h3>
+                            <h3 style={{ color: '#3A5A78' }}>Agendar con {selectedMedico.medico}</h3>
                             <button
                                 onClick={closeModal}
                                 className="btn-close"
@@ -126,12 +114,15 @@ const Servicios = () => {
                         </div>
 
                         <p className="mb-4" style={{ color: '#5C8374' }}>
-                            Elige tu método preferido para contactar al especialista:
+                            Especialidad: {selectedMedico.especialidad}
+                        </p>
+                        <p className="mb-4" style={{ color: '#5C8374' }}>
+                            {selectedMedico.descripcion}
                         </p>
 
                         <div className="d-grid gap-3">
                             <a
-                                href={`tel:${servicios.find(s => s.medico === selectedMedico)?.telefono}`}
+                                href={`tel:${selectedMedico.telefono}`}
                                 className="btn btn-lg d-flex align-items-center justify-content-center"
                                 style={{
                                     backgroundColor: '#3A5A78',
@@ -143,7 +134,7 @@ const Servicios = () => {
                             </a>
 
                             <a
-                                href={`https://wa.me/?text=Hola ${selectedMedico}, quisiera agendar una cita`}
+                                href={`https://wa.me/?text=Hola ${selectedMedico.medico}, quisiera agendar una cita`}
                                 className="btn btn-lg d-flex align-items-center justify-content-center"
                                 style={{
                                     backgroundColor: '#25D366',
