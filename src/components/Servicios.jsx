@@ -103,57 +103,66 @@ const Servicios = () => {
             </div>
 
             {/* Modal */}
-            {showModal && selectedMedico && (
-                <div
-                    className="modal-backdrop fade show d-flex align-items-center justify-content-center modal-backdrop-custom"
-                >
-                    <div className="modal-content modal-content-custom">
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h3 style={{ color: '#3A5A78' }}>Agendar con {selectedMedico.medico}</h3>
-                            <button
-                                onClick={closeModal}
-                                className="btn-close"
-                                style={{ fontSize: '1.2rem' }}
-                            />
-                        </div>
+{showModal && selectedMedico && (
+  <div 
+    className="modal fade show" 
+    tabIndex="-1" 
+    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content border-0 p-4" style={{ borderRadius: '12px' }}>
+        <div className="modal-header">
+          <h3 className="modal-title" style={{ color: '#3A5A78' }}>
+            Agendar con {selectedMedico.medico}
+          </h3>
+          <button
+            onClick={closeModal}
+            className="btn-close"
+            style={{ fontSize: '1.2rem' }}
+          />
+        </div>
 
-                        <p className="mb-4" style={{ color: '#5C8374' }}>
-                            Especialidad: {selectedMedico.especialidad}
-                        </p>
-                        <p className="mb-4" style={{ color: '#5C8374' }}>
-                            {selectedMedico.descripcion}
-                        </p>
+        <div className="modal-body">
+          <p className="mb-3" style={{ color: '#5C8374' }}>
+            Especialidad: {selectedMedico.especialidad}
+          </p>
+          <p className="mb-4" style={{ color: '#5C8374' }}>
+            {selectedMedico.descripcion}
+          </p>
 
-                        <div className="d-grid gap-3">
-                            <a
-                                href={`tel:${selectedMedico.telefono}`}
-                                className="btn btn-lg d-flex align-items-center justify-content-center"
-                                style={{
-                                    backgroundColor: '#3A5A78',
-                                    color: 'white',
-                                    borderRadius: '8px'
-                                }}
-                            >
-                                <i className="bi bi-telephone-fill me-2"></i> Llamar ahora
-                            </a>
+          <div className="d-grid gap-3">
+            <a
+              href={`tel:${selectedMedico.telefono}`}
+              className="btn btn-lg d-flex align-items-center justify-content-center"
+              style={{
+                backgroundColor: '#3A5A78',
+                color: 'white',
+                borderRadius: '8px'
+              }}
+            >
+              <i className="bi bi-telephone-fill me-2"></i> Llamar ahora
+            </a>
 
-                            <a
-                                href={`https://wa.me/?text=Hola ${selectedMedico.medico}, quisiera agendar una cita`}
-                                className="btn btn-lg d-flex align-items-center justify-content-center"
-                                style={{
-                                    backgroundColor: '#25D366',
-                                    color: 'white',
-                                    borderRadius: '8px'
-                                }}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                <i className="bi bi-whatsapp me-2"></i> WhatsApp
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <a
+              href={`https://wa.me/?text=Hola ${selectedMedico.medico}, quisiera agendar una cita`}
+              className="btn btn-lg d-flex align-items-center justify-content-center"
+              style={{
+                backgroundColor: '#25D366',
+                color: 'white',
+                borderRadius: '8px'
+              }}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <i className="bi bi-whatsapp me-2"></i> WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
             {filteredServicios.length === 0 && (
                 <div className="text-center py-5">

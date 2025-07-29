@@ -138,49 +138,50 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
 
-        {/* Modal de contacto */}
-        {showContactModal && (
-          <div 
-            className="modal fade show d-block" 
-            tabIndex="-1" 
-            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+       {/* Modal de contacto */}
+{showContactModal && (
+  <div 
+    className="modal fade show" 
+    tabIndex="-1" 
+    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Contáctanos</h5>
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setShowContactModal(false)}
+          ></button>
+        </div>
+        <div className="modal-body">
+          <p>
+            ¡Gracias por confiar en <b>AgendaVET</b>! <br />
+            Puedes escribirnos a <b>soporte@agendavet.com</b> o llamarnos al <b>+52 123 456 7890</b>.
+          </p>
+        </div>
+        <div className="modal-footer">
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={() => setShowContactModal(false)}
           >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Contáctanos</h5>
-                  <button 
-                    type="button" 
-                    className="btn-close" 
-                    onClick={() => setShowContactModal(false)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <p>
-                    ¡Gracias por confiar en <b>AgendaVET</b>! <br />
-                    Puedes escribirnos a <b>soporte@agendavet.com</b> o llamarnos al <b>+52 123 456 7890</b>.
-                  </p>
-                </div>
-                <div className="modal-footer">
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    onClick={() => setShowContactModal(false)}
-                  >
-                    Cerrar
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-primary"
-                    onClick={() => alert('¡Pronto nos pondremos en contacto!')}
-                  >
-                    Enviar mensaje
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+            Cerrar
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-primary"
+            onClick={() => alert('¡Pronto nos pondremos en contacto!')}
+          >
+            Enviar mensaje
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
         {!user && (
           <div className="text-center mt-4">
