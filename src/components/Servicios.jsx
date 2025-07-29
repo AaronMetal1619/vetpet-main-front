@@ -27,33 +27,29 @@ const Servicios = () => {
     };
 
     return (
-        <div className="container py-4 servicios-container"> {/* 👈 añadimos la clase del CSS */}
+        <div className="servicios-container"> {/* 👈 añadimos la clase del CSS */}
             {/* Header */}
-            <header className="text-center mb-5">
-                <p></p>
-                <p></p>
-                <p></p>
-                <p></p>
-                <h1 className="display-4 fw-bold mb-3" style={{ color: '#3A5A78' }}>Servicios Veterinarios</h1>
-                <p className="lead" style={{ color: '#5C8374' }}>Cuidado experto para tu compañero peludo</p>
+            <header className="servicios-header">
+                <h1>Servicios Veterinarios</h1>
+                <p>Cuidado experto para tu compañero peludo</p>
             </header>
 
             {/* Barra de búsqueda */}
-            <div className="row justify-content-center mb-4">
-                <div className="col-md-8">
+            <div className="search-container">
+                
                     <input
                         type="text"
-                        className="form-control form-control-lg border-2"
+                        className="form-control form-control-lg"
                         style={{
-                            borderColor: '#B7C4CF',
-                            backgroundColor: '#FFFFFF',
-                            boxShadow: '0 2px 8px rgba(58, 90, 120, 0.1)'
+                             borderColor: '#d1c7bc',
+                             backgroundColor: '#fff',
+                             boxShadow: '0 2px 12px rgba(58, 90, 120, 0.1)'
                         }}
                         placeholder="🔍 Buscar especialidad o médico..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                </div>
+                
             </div>
 
             {/* Lista de servicios */}
@@ -61,7 +57,7 @@ const Servicios = () => {
                 {filteredServicios.map((servicio) => (
                     <div key={servicio.id} className="col-md-6 col-lg-4">
                         <div
-                            className="card h-100 servicio-card" // 👈 usamos clase del CSS
+                            className="card servicios-card" // 👈 usamos clase del CSS
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                         >
