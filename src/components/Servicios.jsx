@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import './Servicios.css';
+
 
 const Servicios = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +29,7 @@ const Servicios = () => {
     };
 
     return (
-        <div className="container py-4" style={{ backgroundColor: '#F9F5F0' }}> {/* Fondo cálido claro */}
+         <div className="container py-4 servicios-container"> {/* Fondo cálido claro */}
             {/* Header */}
             <header className="text-center mb-5">
                 <h1 className="display-4 fw-bold mb-3" style={{ color: '#3A5A78' }}>Servicios Veterinarios</h1>
@@ -57,12 +59,7 @@ const Servicios = () => {
                 {filteredServicios.map((servicio) => (
                     <div key={servicio.id} className="col-md-6 col-lg-4">
                         <div
-                            className="card h-100 border-0 shadow-sm overflow-hidden"
-                            style={{
-                                backgroundColor: '#FFFFFF',
-                                transition: 'transform 0.3s',
-                                borderRadius: '12px'
-                            }}
+                            className="card h-100 servicio-card" // 👈 usamos clase del CSS
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                         >
@@ -92,7 +89,8 @@ const Servicios = () => {
                                             color: 'white',
                                             border: 'none'
                                         }}
-                                        onClick={() => openModal(servicio.medico)}
+                                        onClick={() => openModal(servicio)}
+                                        //onClick={() => openModal(servicio.medico)}
                                     >
                                         Contactar
                                     </button>
