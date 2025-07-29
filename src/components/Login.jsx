@@ -29,6 +29,7 @@ const Login = ({ onLogin }) => {
 
     if (localUser) {
       localStorage.setItem('token', 'fake-token'); // Token falso
+      localStorage.setItem('userLocal', JSON.stringify(localUser)); // 👈 Aquí guardamos el usuario local
       onLogin(localUser);
       return;
     }
