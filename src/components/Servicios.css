@@ -1,87 +1,55 @@
-/* Mantén todos los estilos anteriores y solo cambia estos */
+/* === Estilos para Servicios.jsx === */
 
-/* Tarjetas de médicos (estilo original mejorado) */
-
-/* En Servicios.css */
 .servicios-container {
   background-color: #f9f5f0;
-  min-height: 100vh;
-  padding: 4rem 2rem;
-}
-
-.servicios-content {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 2rem;
-}
-
-/* Grid de tarjetas */
-.row-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 25px;
-  margin-top: 30px;
-}
-
-.servicio-card {
-  transition: all 0.3s ease;
   border-radius: 12px;
-  background: white;
-  border: none;
-  height: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
 }
 
-.servicio-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+.servicios-header h1 {
+  color: #3a5a78;
+  font-weight: 700;
 }
 
-/* Contenido de la tarjeta */
-.card-body {
-  padding: 1.5rem;
+.servicios-header p {
+  color: #5c8374;
 }
 
-/* Badge de especialidad */
-.badge-especialidad {
-  background-color: #E8C4C4;
-  color: #C06C84;
+.servicios-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(58, 90, 120, 0.1);
+}
+
+.servicios-card:hover {
+  transform: translateY(-5px);
+}
+
+.servicios-badge {
+  background-color: #e8c4c4;
+  color: #c06c84;
   font-size: 0.8rem;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
 }
 
-/* Textos de la tarjeta */
-.nombre-medico {
-  color: #3A5A78;
-  margin: 12px 0;
-}
-
-.descripcion-medico {
-  color: #5C8374;
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
-
-/* Info de contacto */
-.contacto-info {
-  color: #5C8374;
-  font-size: 0.9rem;
-}
-
-/* Botón de contacto */
-.btn-contactar {
-  background-color: #C06C84;
-  color: white;
+.servicios-btn {
+  background-color: #c06c84;
+  color: #fff;
   border: none;
   border-radius: 25px;
   padding: 8px 20px;
-  transition: all 0.3s;
+  transition: background-color 0.3s;
 }
 
-.btn-contactar:hover {
-  background-color: #A8566B;
-  transform: translateY(-2px);
+.servicios-btn:hover {
+  background-color: #a8566b;
+}
+
+.modal-content-custom {
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(92, 131, 116, 0.2);
+}
+
+.modal-title {
+  color: #3a5a78;
 }
