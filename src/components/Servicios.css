@@ -19,13 +19,13 @@
 
 /* Modal */
 .modal-backdrop-custom {
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgb(0, 0, 0);
 }
 
 .modal-content-custom {
   border-radius: 15px;
   padding: 2rem;
-  background: #fff;
+  background: #3A5A78;
   animation: fadeIn 0.4s ease-in-out;
 }
 
