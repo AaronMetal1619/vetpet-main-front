@@ -26,3 +26,20 @@ COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
+# Recibe arg para la variable (opcional si usas .env)
+ARG VITE_CHATBOT_URL
+ENV VITE_CHATBOT_URL=$VITE_CHATBOT_URL
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+# Debug: mostrar variable
+RUN echo "VITE_CHATBOT_URL en build: $VITE_CHATBOT_URL"
+
+RUN npm run build
+
+# Etapa producción con nginx
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html

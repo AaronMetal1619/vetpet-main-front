@@ -9,8 +9,11 @@ import Perfil from './components/Perfil';
 import AgendarCita from './components/AgendarCita';
 import Dashboard from './components/Dashboard';
 import Servicios from './components/Servicios'; // Importamos el componente Servicios
-
+import ChatbotWidget from './components/ChatbotWidget';
 function App() {
+// Aquí verificamos la variable de entorno
+  console.log("🧠 Chatbot URL:", import.meta.env.VITE_CHATBOT_URL);
+
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showAgendar, setShowAgendar] = useState(false);
@@ -129,6 +132,9 @@ function App() {
                 ) : (
                   showPerfil ? <Perfil /> : <Servicios />
                 )}
+                
+                {/* Chatbot solo si el usuario está autenticado */}
+                <ChatbotWidget />
               </div>
             )
           } />
