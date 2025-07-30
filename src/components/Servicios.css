@@ -20,6 +20,7 @@
 .servicios-card {
   background-color: #ffffff;
   border-radius: 12px;
+  margin-top: 20px;
   transition: transform 0.3s ease;
   box-shadow: 0 2px 8px rgba(58, 90, 120, 0.1);
 }

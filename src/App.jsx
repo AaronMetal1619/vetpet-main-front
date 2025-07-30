@@ -18,6 +18,7 @@ function App() {
   const [showPerfil, setShowPerfil] = useState(false);
   const [showServicios, setShowServicios] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showPagoModal, setShowPagoModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -104,6 +105,16 @@ function App() {
                             Contáctanos
                           </a>
                         </li>
+                        {/* esto estoy modificando*/}
+                         <li className="nav-item">
+                          <a 
+                            className="nav-link text-white" 
+                            href="#" 
+                            onClick={(e) => { e.preventDefault(); setShowPagoModal(true); }}
+                          >
+                            Suscripciones
+                          </a>
+                        </li>
                       </ul>
                       <div className="dropdown">
                         <button className="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -175,6 +186,49 @@ function App() {
             onClick={() => alert('¡Pronto nos pondremos en contacto!')}
           >
             Enviar mensaje
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+{/* Modal de pago */}
+{showPagoModal && (
+  <div 
+    className="modal fade show" 
+    tabIndex="-1" 
+    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Suscripciones</h5>
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setShowContactModal(false)}
+          ></button>
+        </div>
+        <div className="modal-body">
+          <p>
+            ¡Gracias por confiar en <b>AgendaVET</b>! <br />
+            Puedes suscribirte en el boton <b>Suscribirse</b> o llamarnos al <b>+52 123 456 7890</b>.
+          </p>
+        </div>
+        <div className="modal-footer">
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={() => setShowPagoModal(false)}
+          >
+            Cerrar
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-primary"
+            onClick={() => href = "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"}//alert('https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00')}
+          >
+            Suscribirse 
           </button>
         </div>
       </div>
