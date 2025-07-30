@@ -60,7 +60,7 @@ function App() {
     window.location.reload(); 
   };
 
-  return (
+  return (    
     <Router>
       <div className="container mt-4">
         <Routes>
@@ -132,6 +132,15 @@ function App() {
               </div>
             )
           } />
+          <script async
+                        src="https://js.stripe.com/v3/buy-button.js">
+                                    </script>
+
+      <stripe-buy-button
+  buy-button-id="buy_btn_1RqSGbBdtpYcP99zqGRIUI7y"
+  publishable-key="pk_test_51RqS83BdtpYcP99zj6EiuBEyTBonovi3DaB9VLO492Q5rBGYEeNHV3Bheh0LadlrqrDBIzishPgbrSaip2c4mpfD00p3Ol4MTV"
+>
+</stripe-buy-button>
           
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/agendar" element={<AgendarCita vet={selectedVet} />} />
@@ -194,5 +203,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
