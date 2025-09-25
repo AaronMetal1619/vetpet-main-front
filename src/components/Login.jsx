@@ -141,19 +141,7 @@ const Login = ({ onLogin }) => {
                   Recordar mi sesión
                 </label>
               </div>
-
-              {/* Botón de Login */}
-              <button
-                type="submit"
-                className="btn btn-primary w-100 py-2 fw-semibold"
-              >
-                <i className="bi bi-box-arrow-in-right me-2"></i>
-                Iniciar sesión
-              </button>
-            </form>
-          </div>
-        </div>
-         {/* Social Login */}
+                      {/* Social Login */}
 <div className="d-flex align-items-center my-4">
   <hr className="flex-grow-1" />
   <span className="px-2 text-muted small">o continuar con</span>
@@ -182,8 +170,17 @@ const Login = ({ onLogin }) => {
     <i className="bi bi-microsoft me-2"></i> Iniciar con Microsoft
   </a>
 </div>
-
-
+              {/* Botón de Login */}
+              <button
+                type="submit"
+                className="btn btn-primary w-100 py-2 fw-semibold"
+              >
+                <i className="bi bi-box-arrow-in-right me-2"></i>
+                Iniciar sesión
+              </button>
+            </form>
+          </div>
+        </div>
         {/* Footer */}
         <div className="text-center mt-4 small text-muted">
           <p className="mb-0">© {new Date().getFullYear()} Veterinaria App. Todos los derechos reservados.</p>
