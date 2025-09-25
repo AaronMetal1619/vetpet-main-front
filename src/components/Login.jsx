@@ -64,38 +64,6 @@ const Login = ({ onLogin }) => {
             />
             <h2 className="text-white mt-3 mb-0">Iniciar Sesión</h2>
           </div>
-          {/* Social Login */}
-<div className="d-flex align-items-center my-4">
-  <hr className="flex-grow-1" />
-  <span className="px-2 text-muted small">o continuar con</span>
-  <hr className="flex-grow-1" />
-</div>
-
-<div className="d-grid gap-2">
-  <a
-    href="https://vetpet-sandbox-1.onrender.com/api/auth/google/redirect"
-    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
-  >
-    <i className="bi bi-google me-2"></i> Iniciar con Google
-  </a>
-
-  <a
-    href="https://vetpet-sandbox-1.onrender.com/api/auth/facebook/redirect"
-    className="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center"
-  >
-    <i className="bi bi-facebook me-2"></i> Iniciar con Facebook
-  </a>
-
-  <a
-    href="https://vetpet-sandbox-1.onrender.com/api/auth/microsoft/redirect"
-    className="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center"
-  >
-    <i className="bi bi-microsoft me-2"></i> Iniciar con Microsoft
-  </a>
-</div>
-
-
-
           {/* Cuerpo del formulario */}
           <div className="card-body p-4 p-md-5">
             {error && (
@@ -185,6 +153,36 @@ const Login = ({ onLogin }) => {
             </form>
           </div>
         </div>
+         {/* Social Login */}
+<div className="d-flex align-items-center my-4">
+  <hr className="flex-grow-1" />
+  <span className="px-2 text-muted small">o continuar con</span>
+  <hr className="flex-grow-1" />
+</div>
+
+<div className="d-grid gap-2">
+  <a
+    href="https://vetpet-sandbox-1.onrender.com/api/auth/google/redirect"
+    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
+  >
+    <i className="bi bi-google me-2"></i> Iniciar con Google
+  </a>
+
+  <a
+    href="https://vetpet-sandbox-1.onrender.com/api/auth/facebook/redirect"
+    className="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center"
+  >
+    <i className="bi bi-facebook me-2"></i> Iniciar con Facebook
+  </a>
+
+  <a
+    href="https://vetpet-sandbox-1.onrender.com/api/auth/microsoft/redirect"
+    className="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center"
+  >
+    <i className="bi bi-microsoft me-2"></i> Iniciar con Microsoft
+  </a>
+</div>
+
 
         {/* Footer */}
         <div className="text-center mt-4 small text-muted">
