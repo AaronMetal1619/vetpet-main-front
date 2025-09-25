@@ -9,6 +9,25 @@ import Perfil from './components/Perfil';
 import AgendarCita from './components/AgendarCita';
 import Dashboard from './components/Dashboard';
 import Servicios from './components/Servicios'; // Importamos el componente Servicios
+// SocialLoginHandler.jsx
+<Route path="/social-login-success" element={<SocialLoginHandler />} />
+
+import SocialLoginHandler from './components/SocialLoginHandler';
+
+function SocialLoginHandler() {
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = params.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      navigate("/");
+    }
+  }, [params, navigate]);
+
+  return <p>Iniciando sesión...</p>;
+}
 
 function App() {
   const [user, setUser] = useState(null);
