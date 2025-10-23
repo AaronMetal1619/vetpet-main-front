@@ -10,9 +10,9 @@ import AgendarCita from './components/AgendarCita';
 import Dashboard from './components/Dashboard';
 import Servicios from './components/Servicios'; // Importamos el componente Servicios
 // SocialLoginHandler.jsx
-<Route path="/social-login-success" element={<SocialLoginHandler />} />
+//<Route path="/social-login-success" element={<SocialLoginHandler />} />
 
-import SocialLoginHandler from './components/SocialLoginHandler';
+//import SocialLoginHandler from './components/SocialLoginHandler';
 
 
 function App() {
