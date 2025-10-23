@@ -9,24 +9,49 @@ async function sendTokenToBackend(idToken) {
   return res.data; // { token: 'YOUR_APP_TOKEN', user: {...} }
 }
 
+
 export default function SocialLogin({ onLogin }) {
   const handleProvider = async (provider) => {
     try {
-      const result = await signInWithPopup(auth, provider); // popup flow
+      const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const idToken = await user.getIdToken(); // token de Firebase (JWT)
-      // enviar idToken al backend
+      const idToken = await user.getIdToken();
+
+      // Envía el idToken (Firebase) al backend para verificar y crear sesión
       const data = await sendTokenToBackend(idToken);
-      // backend te devuelve tu token (sanctum/personal token)
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userLocal', JSON.stringify(data.user));
-      if (onLogin) onLogin(data.user);
+
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data?.user) {
+        localStorage.setItem("userLocal", JSON.stringify(data.user));
+        if (onLogin) onLogin(data.user);
+      } else {
+        // Fallback: guarda info mínima del user de Firebase
+        localStorage.setItem("userLocal", JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName,
+          avatar: user.photoURL
+        }));
+        if (onLogin) onLogin({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName,
+          avatar: user.photoURL
+        });
+      }
     } catch (err) {
-      console.error('Social login error', err);
-      alert('Error al iniciar sesión: ' + (err.message || err));
+      console.error("Social login error:", err);
+      // Mensajes amigables al usuario
+      if (err?.code === "auth/popup-closed-by-user") {
+        alert("Has cerrado la ventana de autenticación.");
+      } else {
+        alert("Error al iniciar sesión con proveedor. Revisa la consola.");
+      }
     }
   };
-
+  
   return (
     <div className="d-grid gap-2">
       <button className="btn btn-outline-danger" onClick={() => handleProvider(googleProvider)}>

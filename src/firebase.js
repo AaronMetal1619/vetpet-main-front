@@ -1,12 +1,8 @@
 // Import the functions you need from the SDKs you need
+// src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider } from 'firebase/auth';
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider } from "firebase/auth";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAp0bz_p_DashNST8N_s7bI1ZAL_PTdAL4",
   authDomain: "vetpet-auth.firebaseapp.com",
@@ -19,9 +15,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-// providers
-export const googleProvider = new GoogleAuthProvider();
-export const facebookProvider = new FacebookAuthProvider();
-// microsoft via OAuthProvider
-export const microsoftProvider = new OAuthProvider('microsoft.com');
+const auth = getAuth(app);
+// Providers (declarados como const, sin "export" aquí)
+const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
+const microsoftProvider = new OAuthProvider("microsoft.com");
+
+export { auth, googleProvider, facebookProvider, microsoftProvider };
+export default app;

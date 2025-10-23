@@ -1,5 +1,5 @@
 // SocialLoginHandler.jsx
-import React, { useEffect } from 'react';
+/*import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -23,4 +23,4 @@ export default function SocialLoginHandler() {
   }, [params, navigate]);
 
   return <p>Iniciando sesión...</p>;
-}
+}*/
