@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { fakeUsers } from '../fakeUsers'; // 👈 importamos los usuarios locales
+import SocialLogin from './SocialLogin';
+
 
 // Importa las imágenes de ojo
 import eyeOpen from "../assets/eyeOpen.jpg";
@@ -148,28 +150,9 @@ const Login = ({ onLogin }) => {
   <hr className="flex-grow-1" />
 </div>
 
-<div className="d-grid gap-2">
-  <a
-    href="https://vetpet-sandbox-1.onrender.com/api/auth/google/redirect"
-    className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center"
-  >
-    <i className="bi bi-google me-2"></i> Iniciar con Google
-  </a>
+{/* Reemplaza los <a href=...> por: */}
+<SocialLogin onLogin={onLogin} />
 
-  <a
-    href="https://vetpet-sandbox-1.onrender.com/api/auth/facebook/redirect"
-    className="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center"
-  >
-    <i className="bi bi-facebook me-2"></i> Iniciar con Facebook
-  </a>
-
-  <a
-    href="https://vetpet-sandbox-1.onrender.com/api/auth/microsoft/redirect"
-    className="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center"
-  >
-    <i className="bi bi-microsoft me-2"></i> Iniciar con Microsoft
-  </a>
-</div>
               {/* Botón de Login */}
               <button
                 type="submit"
