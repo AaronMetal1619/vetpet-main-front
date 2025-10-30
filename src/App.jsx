@@ -24,7 +24,7 @@ function App() {
   const [showPerfil, setShowPerfil] = useState(false);
   const [showServicios, setShowServicios] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-   const [showPagoModal, setShowPagoModal] = useState(false);
+  const [showPagoModal, setShowPagoModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -224,7 +224,7 @@ function App() {
           <button 
             type="button" 
             className="btn btn-secondary" 
-            onClick={() => setShowpagoModal(false)}
+            onClick={() => setShowPagoModal(false)}
           >
             Cerrar
           </button>
