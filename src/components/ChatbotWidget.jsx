@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const chatbotUrl = import.meta.env.VITE_CHATBOT_URL;
-console.log("🧠 Chatbot URL en ChatbotWidget:", chatbotUrl);
+console.log(" Chatbot URL en ChatbotWidget:", chatbotUrl);
 
 const ChatbotWidget = () => {
   const [messages, setMessages] = useState([]);
@@ -156,3 +156,6 @@ const ChatbotWidget = () => {
 };
 
 export default ChatbotWidget;
+
+
+//  https://unpermanent-nonsuccessive-hortencia.ngrok-free.dev/webhook/chatbot
