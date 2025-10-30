@@ -230,7 +230,7 @@ function App() {
           <button 
             type="button" 
             className="btn btn-primary"
-            onClick={() => alert('¡Pronto nos pondremos en contacto!')}
+            onClick={() => "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"}
           >
             Suscribirse
           </button>
