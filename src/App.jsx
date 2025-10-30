@@ -16,8 +16,6 @@ import Servicios from './components/Servicios'; // Importamos el componente Serv
 //import SocialLoginHandler from './components/SocialLoginHandler';
 //importaremos el modal de stripe para pagos
 
-
-
 function App() {
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
@@ -233,7 +231,7 @@ function App() {
           <button 
             type="button" 
             className="btn btn-primary"
-            onClick={() => "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"}
+            onClick={() => alert('¡Pronto nos pondremos en contacto!')}
           >
             Suscribirse
           </button>
