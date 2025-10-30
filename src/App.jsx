@@ -114,7 +114,7 @@ function App() {
                           <a 
                             className="nav-link text-white" 
                             href="#" 
-                            onClick={(e) => { e.preventDefault(); setShowContactModal(true); }}
+                            onClick={(e) => { e.preventDefault(); setShowPagoModal(true); }}
                           >
                             Suscribirse
                           </a>
@@ -206,7 +206,7 @@ function App() {
     <div className="modal-dialog modal-dialog-centered">
       <div className="modal-content">
         <div className="modal-header">
-          <h5 className="modal-title">Suscribete</h5>
+          <h5 className="modal-title">Suscríbete a AgendaVET</h5>
           <button 
             type="button" 
             className="btn-close" 
@@ -215,9 +215,13 @@ function App() {
         </div>
         <div className="modal-body">
           <p>
-            ¡Gracias por confiar en <b>AgendaVET</b>! <br />
-            Puedes escribirnos a <b>soporte@agendavet.com</b> o llamarnos al <b>+52 123 456 7890</b>.
+            ¡Mejora tu experiencia con <b>AgendaVET Premium</b>! <br />
+            Obtén acceso exclusivo a características avanzadas y prioridad en soporte.
           </p>
+          <div className="text-center mt-4">
+            <h6>Plan Premium: $99 MXN/mes</h6>
+            <small className="text-muted">Cancelación en cualquier momento</small>
+          </div>
         </div>
         <div className="modal-footer">
           <button 
@@ -225,14 +229,14 @@ function App() {
             className="btn btn-secondary" 
             onClick={() => setShowPagoModal(false)}
           >
-            Cerrar
+            Cancelar
           </button>
           <button 
             type="button" 
             className="btn btn-primary"
-            onClick={() => "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"}
+            onClick={() => window.open("https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00", "_blank")}
           >
-            Suscribirse
+            Suscribirse ahora
           </button>
         </div>
       </div>
