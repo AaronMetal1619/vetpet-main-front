@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
+import PanelSuscripciones from './components/PanelSuscripciones';
 import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
@@ -111,14 +112,13 @@ function App() {
                           </a>
                         </li>
                         <li className="nav-item">
-                          <a 
+                          <Link 
                             className="nav-link text-white" 
-                            href="#" 
-                            onClick={(e) => { e.preventDefault(); setShowPagoModal(true); }}
+                            to="/suscripciones"
                           >
-                            Suscribirse
-                          </a>
-                        </li>
+                                Suscribirse
+                          </Link>
+                        </li> 
                       </ul>
                       <div className="dropdown">
                         <button className="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -151,6 +151,7 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/agendar" element={<AgendarCita vet={selectedVet} />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/suscripciones" element={<PanelSuscripciones />} />
         </Routes>
 
        {/* Modal de contacto */}

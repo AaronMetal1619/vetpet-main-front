@@ -1,0 +1,72 @@
+.suscripciones-container {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+  min-height: 100vh;
+  padding: 100px 20px 50px;
+}
+
+.suscripcion-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.suscripcion-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.suscripcion-card.destacado {
+  border: 2px solid #007bff;
+  position: relative;
+  transform: scale(1.05);
+}
+
+.suscripcion-card.destacado::before {
+  content: "MÁS POPULAR";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #007bff;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.badge-ahorro {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.badge-ahorro .badge {
+  font-size: 0.8rem;
+  padding: 8px 12px;
+}
+
+.suscripciones-header {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
+}
+
+.precio h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .suscripcion-card.destacado {
+    transform: scale(1);
+  }
+  
+  .suscripciones-container {
+    padding: 80px 15px 30px;
+  }
+}
