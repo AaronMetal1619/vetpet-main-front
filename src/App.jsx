@@ -109,6 +109,15 @@ function App() {
                             Contáctanos
                           </a>
                         </li>
+                        <li className="nav-item">
+                          <a 
+                            className="nav-link text-white" 
+                            href="#" 
+                            onClick={(e) => { e.preventDefault(); setShowContactModal(true); }}
+                          >
+                            Suscribirse
+                          </a>
+                        </li>
                       </ul>
                       <div className="dropdown">
                         <button className="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
