@@ -143,24 +143,26 @@ const Login = ({ onLogin }) => {
                   Recordar mi sesión
                 </label>
               </div>
-                      {/* Social Login */}
-<div className="d-flex align-items-center my-4">
-  <hr className="flex-grow-1" />
-  <span className="px-2 text-muted small">o continuar con</span>
-  <hr className="flex-grow-1" />
-</div>
-
-{/* Reemplaza los <a href=...> por: */}
-<SocialLogin onLogin={onLogin} />
-
-              {/* Botón de Login */}
-              <button
+<div>
+  <button
                 type="submit"
                 className="btn btn-primary w-100 py-2 fw-semibold"
               >
                 <i className="bi bi-box-arrow-in-right me-2"></i>
                 Iniciar sesión
               </button>
+</div>
+                      {/* Social Login */}
+<div className="d-flex align-items-center my-4">
+  <hr className="flex-grow-1" />
+  <span className="px-2 text-muted small">o continuar con</span>
+  <hr className="flex-grow-1" />
+</div>
+{/* Reemplaza los <a href=...> por: */}
+<SocialLogin onLogin={onLogin} />
+
+              {/* Botón de Login */}
+              
             </form>
           </div>
         </div>

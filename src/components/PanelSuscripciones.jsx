@@ -8,13 +8,12 @@ const PanelSuscripciones = () => {
   const planes = [
     {
       id: 1,
-      titulo: "Premium Básico Mensual",
-      precio: "€ 49 /mes",
+      titulo: "Premium Basico Mensual",
+      precio: "$ 150 /mes",
       periodo: "Suscripción renovable cada mes",
       caracteristicas: [
-        { texto: "Accesso a TODOS los cursos", incluido: true },
-        { texto: "Accesso a las Píldoras Premium", incluido: true },
-        { texto: "Accesso contenido extra del Podcast (presentación en vídeo)", incluido: true },
+        { texto: "Accesso a otros 2 cardex", incluido: true },
+        { texto: "Accesso al chatbot 24/7", incluido: true },
         { texto: "Soporte por email", incluido: true }
       ],
       destacado: false,
@@ -22,14 +21,14 @@ const PanelSuscripciones = () => {
     },
     {
       id: 2,
-      titulo: "Premium Básico Anual",
-      precio: "€ 490 /año",
+      titulo: "Premium Plus Anual",
+      precio: "$ 1800 /año",
       periodo: "Suscripción renovable cada año",
-      ahorro: "Ahorra un 218 € con la cuota anual",
+      ahorro: "Ahorra un total de $600 mxn con la cuota anual",
       caracteristicas: [
-        { texto: "Accesso a TODOS los cursos", incluido: true },
-        { texto: "Accesso a las Píldoras Premium", incluido: true },
-        { texto: "Accesso contenido extra del Podcast (presentación en vídeo)", incluido: true },
+        { texto: "Sin limite de cardex", incluido: true },
+        { texto: "Accesso al chatbot 24/7", incluido: true },
+        { texto: "Programa de puntos por fidelidad", incluido: true },
         { texto: "Soporte por email", incluido: true }
       ],
       destacado: true,
@@ -38,13 +37,13 @@ const PanelSuscripciones = () => {
     {
       id: 3,
       titulo: "Premium Plus",
-      precio: "€ 99 /mes",
+      precio: "$ 200 /mes",
       periodo: "Suscripción renovable cada mes",
       caracteristicas: [
-        { texto: "Premium básico +", incluido: true },
-        { texto: "Soporte prioritario", incluido: true },
-        { texto: "Acceso a Masterclass en directo", incluido: true },
-        { texto: "Sistema de afiliados, invita a 2 y tu cuota es gratis", incluido: true }
+        { texto: "Sin limite de cardex", incluido: true },
+        { texto: "Accesso al chatbot 24/7", incluido: true },
+        { texto: "Programa de puntos por fidelidad", incluido: true },
+        { texto: "Soporte por email", incluido: true }
       ],
       destacado: false,
       tipo: "plus"
@@ -54,8 +53,8 @@ const PanelSuscripciones = () => {
   const handleSuscribirse = (planId) => {
     // Aquí puedes manejar la redirección a Stripe según el plan
     const linksStripe = {
-      1: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00", // Mensual
-      2: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00", // Anual
+      1: "https://buy.stripe.com/test_9B614magPcXTcMs5tKeIw01", // Mensual
+      2: "https://buy.stripe.com/test_fZu3cucoX2jfcMscWceIw02", // Anual
       3: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"  // Plus
     };
     
@@ -66,7 +65,7 @@ const PanelSuscripciones = () => {
     <div className="suscripciones-container">
       {/* Header */}
       <div className="suscripciones-header text-center mb-5">
-        <h1 className="display-4 fw-bold text-primary">Píldoras para ZohoCRM</h1>
+        <h1 className="display-4 fw-bold text-primary">Únete a la familia VetPet</h1>
         <p className="lead text-muted">Elige el plan que mejor se adapte a tus necesidades</p>
       </div>
 
@@ -109,7 +108,7 @@ const PanelSuscripciones = () => {
                       className={`btn btn-lg w-100 ${plan.destacado ? 'btn-primary' : 'btn-outline-primary'}`}
                       onClick={() => handleSuscribirse(plan.id)}
                     >
-                      Me suscribo
+                      Unirse
                     </button>
                   </div>
                 </div>
