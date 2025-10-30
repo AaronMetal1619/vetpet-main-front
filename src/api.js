@@ -1,5 +1,5 @@
 const API_URL = 'https://vetpet-sandbox-1.onrender.com/api';
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyBzqS6Mp_YH7LF30DX23LB4CzJDAN09TDA';
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyA8dH_tfCariob3HAs4UnDYPl1wdknWhhQ';
 
 // Obtener productos
 export const fetchProductos = async () => {
