@@ -15,16 +15,7 @@ import Servicios from './components/Servicios'; // Importamos el componente Serv
 
 //import SocialLoginHandler from './components/SocialLoginHandler';
 //importaremos el modal de stripe para pagos
-function BuyButtonComponent() {
-  // Paste the stripe-buy-button snippet in your React component
-  return (
-    <stripe-buy-button
-      buy-button-id="'{{BUY_BUTTON_ID}}'"
-      publishable-key="pk_test_51RqS83BdtpYcP99zj6EiuBEyTBonovi3DaB9VLO492Q5rBGYEeNHV3Bheh0LadlrqrDBIzishPgbrSaip2c4mpfD00p3Ol4MTV"
-    >
-    </stripe-buy-button>
-  );
-}
+
 
 
 function App() {
@@ -215,15 +206,40 @@ function App() {
     tabIndex="-1" 
     style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
   >
-    <script async
-  src="https://js.stripe.com/v3/buy-button.js">
-</script>
-
-<stripe-buy-button
-  buy-button-id="buy_btn_1RqSGbBdtpYcP99zqGRIUI7y"
-  publishable-key="pk_test_51RqS83BdtpYcP99zj6EiuBEyTBonovi3DaB9VLO492Q5rBGYEeNHV3Bheh0LadlrqrDBIzishPgbrSaip2c4mpfD00p3Ol4MTV"
->
-</stripe-buy-button>
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Contáctanos</h5>
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setShowPagoModal(false)}
+          ></button>
+        </div>
+        <div className="modal-body">
+          <p>
+            ¡Gracias por confiar en <b>AgendaVET</b>! <br />
+            Puedes escribirnos a <b>soporte@agendavet.com</b> o llamarnos al <b>+52 123 456 7890</b>.
+          </p>
+        </div>
+        <div className="modal-footer">
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={() => setShowpagoModal(false)}
+          >
+            Cerrar
+          </button>
+          <button 
+            type="button" 
+            className="btn btn-primary"
+            onClick={() => "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"}
+          >
+            Suscribirse
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 )}
 
