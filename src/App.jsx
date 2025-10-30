@@ -206,7 +206,7 @@ function App() {
     <div className="modal-dialog modal-dialog-centered">
       <div className="modal-content">
         <div className="modal-header">
-          <h5 className="modal-title">Contáctanos</h5>
+          <h5 className="modal-title">Suscribete</h5>
           <button 
             type="button" 
             className="btn-close" 
