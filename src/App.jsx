@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import * as React from 'react';
 
 import Login from './components/Login';
 import Register from './components/Register';
@@ -13,6 +14,17 @@ import Servicios from './components/Servicios'; // Importamos el componente Serv
 //<Route path="/social-login-success" element={<SocialLoginHandler />} />
 
 //import SocialLoginHandler from './components/SocialLoginHandler';
+//importaremos el modal de stripe para pagos
+function BuyButtonComponent() {
+  // Paste the stripe-buy-button snippet in your React component
+  return (
+    <stripe-buy-button
+      buy-button-id="'{{BUY_BUTTON_ID}}'"
+      publishable-key="pk_test_51RqS83BdtpYcP99zj6EiuBEyTBonovi3DaB9VLO492Q5rBGYEeNHV3Bheh0LadlrqrDBIzishPgbrSaip2c4mpfD00p3Ol4MTV"
+    >
+    </stripe-buy-button>
+  );
+}
 
 
 function App() {
@@ -23,6 +35,7 @@ function App() {
   const [showPerfil, setShowPerfil] = useState(false);
   const [showServicios, setShowServicios] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+   const [showPagoModal, setShowPagoModal] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -193,6 +206,24 @@ function App() {
         </div>
       </div>
     </div>
+  </div>
+)}
+{/* Modal de Pago */}
+{showPagoModal && (
+  <div 
+    className="modal fade show" 
+    tabIndex="-1" 
+    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
+  >
+    <script async
+  src="https://js.stripe.com/v3/buy-button.js">
+</script>
+
+<stripe-buy-button
+  buy-button-id="buy_btn_1RqSGbBdtpYcP99zqGRIUI7y"
+  publishable-key="pk_test_51RqS83BdtpYcP99zj6EiuBEyTBonovi3DaB9VLO492Q5rBGYEeNHV3Bheh0LadlrqrDBIzishPgbrSaip2c4mpfD00p3Ol4MTV"
+>
+</stripe-buy-button>
   </div>
 )}
 
