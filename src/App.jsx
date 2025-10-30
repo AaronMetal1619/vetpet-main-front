@@ -30,7 +30,7 @@ function App() {
       const localUser = JSON.parse(localStorage.getItem('userLocal'));
       if (localUser) setUser(localUser);
     } else if (token) {
-      axios.get('https://vetpet-sandbox-1.onrender.com/api/me', {
+      axios.get('https://vetpet-sandbox-vkt2.onrender.com/api/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(response => setUser(response.data))
