@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { fakeUsers } from '../fakeUsers'; // 👈 importamos los usuarios locales
+import SocialLogin from './SocialLogin';
+
 
 // Importa las imágenes de ojo
 import eyeOpen from "../assets/eyeOpen.jpg";
@@ -64,7 +66,6 @@ const Login = ({ onLogin }) => {
             />
             <h2 className="text-white mt-3 mb-0">Iniciar Sesión</h2>
           </div>
-
           {/* Cuerpo del formulario */}
           <div className="card-body p-4 p-md-5">
             {error && (
@@ -142,19 +143,29 @@ const Login = ({ onLogin }) => {
                   Recordar mi sesión
                 </label>
               </div>
-
-              {/* Botón de Login */}
-              <button
+<div>
+  <button
                 type="submit"
                 className="btn btn-primary w-100 py-2 fw-semibold"
               >
                 <i className="bi bi-box-arrow-in-right me-2"></i>
                 Iniciar sesión
               </button>
+</div>
+                      {/* Social Login */}
+<div className="d-flex align-items-center my-4">
+  <hr className="flex-grow-1" />
+  <span className="px-2 text-muted small">o continuar con</span>
+  <hr className="flex-grow-1" />
+</div>
+{/* Reemplaza los <a href=...> por: */}
+<SocialLogin onLogin={onLogin} />
+
+              {/* Botón de Login */}
+              
             </form>
           </div>
         </div>
-
         {/* Footer */}
         <div className="text-center mt-4 small text-muted">
           <p className="mb-0">© {new Date().getFullYear()} Veterinaria App. Todos los derechos reservados.</p>
