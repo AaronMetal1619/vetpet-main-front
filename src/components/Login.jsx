@@ -37,7 +37,7 @@ const Login = ({ onLogin }) => {
     }
 
     try {
-      const response = await axios.post('https://vetpet-sandbox-1.onrender.com/api/login', credentials);
+      const response = await axios.post('https://vetpet-sandbox-vkt2.onrender.com/api/login', credentials);
       const { token, user } = response.data;
 
       localStorage.setItem('token', token);

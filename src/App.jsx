@@ -9,14 +9,17 @@ import Home from './components/Home';
 import Perfil from './components/Perfil';
 import AgendarCita from './components/AgendarCita';
 import Dashboard from './components/Dashboard';
-import Servicios from './components/Servicios'; // Importamos el componente Servicios
-// SocialLoginHandler.jsx
-//<Route path="/social-login-success" element={<SocialLoginHandler />} />
+import Servicios from './components/Servicios';
+import ChatbotWidget from './components/ChatbotWidget';
 
-//import SocialLoginHandler from './components/SocialLoginHandler';
-//importaremos el modal de stripe para pagos
+// SocialLoginHandler.jsx
+// <Route path="/social-login-success" element={<SocialLoginHandler />} />
+// import SocialLoginHandler from './components/SocialLoginHandler';
+// Aquí se podría importar el modal de Stripe en caso de usarse
 
 function App() {
+  console.log("🧠 Chatbot URL:", import.meta.env.VITE_CHATBOT_URL);
+
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showAgendar, setShowAgendar] = useState(false);
@@ -34,7 +37,7 @@ function App() {
       const localUser = JSON.parse(localStorage.getItem('userLocal'));
       if (localUser) setUser(localUser);
     } else if (token) {
-      axios.get('https://vetpet-sandbox-1.onrender.com/api/me', {
+      axios.get('https://vetpet-sandbox-vkt2.onrender.com/api/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(response => setUser(response.data))
@@ -112,11 +115,8 @@ function App() {
                           </a>
                         </li>
                         <li className="nav-item">
-                          <Link 
-                            className="nav-link text-white" 
-                            to="/suscripciones"
-                          >
-                                Suscribirse
+                          <Link className="nav-link text-white" to="/suscripciones">
+                            Suscribirse
                           </Link>
                         </li> 
                       </ul>
@@ -144,6 +144,9 @@ function App() {
                 ) : (
                   showPerfil ? <Perfil /> : <Servicios />
                 )}
+
+                {/* Chatbot solo si el usuario está autenticado */}
+                <ChatbotWidget />
               </div>
             )
           } />
@@ -154,97 +157,97 @@ function App() {
           <Route path="/suscripciones" element={<PanelSuscripciones />} />
         </Routes>
 
-       {/* Modal de contacto */}
-{showContactModal && (
-  <div 
-    className="modal fade show" 
-    tabIndex="-1" 
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Contáctanos</h5>
-          <button 
-            type="button" 
-            className="btn-close" 
-            onClick={() => setShowContactModal(false)}
-          ></button>
-        </div>
-        <div className="modal-body">
-          <p>
-            ¡Gracias por confiar en <b>AgendaVET</b>! <br />
-            Puedes escribirnos a <b>soporte@agendavet.com</b> o llamarnos al <b>+52 123 456 7890</b>.
-          </p>
-        </div>
-        <div className="modal-footer">
-          <button 
-            type="button" 
-            className="btn btn-secondary" 
-            onClick={() => setShowContactModal(false)}
+        {/* Modal de contacto */}
+        {showContactModal && (
+          <div 
+            className="modal fade show" 
+            tabIndex="-1" 
+            style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
           >
-            Cerrar
-          </button>
-          <button 
-            type="button" 
-            className="btn btn-primary"
-            onClick={() => alert('¡Pronto nos pondremos en contacto!')}
-          >
-            Enviar mensaje
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-{/* Modal de Pago */}
-{showPagoModal && (
-  <div 
-    className="modal fade show" 
-    tabIndex="-1" 
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Suscríbete a AgendaVET</h5>
-          <button 
-            type="button" 
-            className="btn-close" 
-            onClick={() => setShowPagoModal(false)}
-          ></button>
-        </div>
-        <div className="modal-body">
-          <p>
-            ¡Mejora tu experiencia con <b>AgendaVET Premium</b>! <br />
-            Obtén acceso exclusivo a características avanzadas y prioridad en soporte.
-          </p>
-          <div className="text-center mt-4">
-            <h6>Plan Premium: $99 MXN/mes</h6>
-            <small className="text-muted">Cancelación en cualquier momento</small>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Contáctanos</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setShowContactModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>
+                    ¡Gracias por confiar en <b>AgendaVET</b>! <br />
+                    Puedes escribirnos a <b>soporte@agendavet.com</b> o llamarnos al <b>+52 123 456 7890</b>.
+                  </p>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => setShowContactModal(false)}
+                  >
+                    Cerrar
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={() => alert('¡Pronto nos pondremos en contacto!')}
+                  >
+                    Enviar mensaje
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="modal-footer">
-          <button 
-            type="button" 
-            className="btn btn-secondary" 
-            onClick={() => setShowPagoModal(false)}
-          >
-            Cancelar
-          </button>
-          <button 
-            type="button" 
-            className="btn btn-primary"
-            onClick={() => window.open("https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00", "_blank")}
-          >
-            Suscribirse ahora
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+        )}
 
+        {/* Modal de Pago */}
+        {showPagoModal && (
+          <div 
+            className="modal fade show" 
+            tabIndex="-1" 
+            style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Suscríbete a AgendaVET</h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setShowPagoModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>
+                    ¡Mejora tu experiencia con <b>AgendaVET Premium</b>! <br />
+                    Obtén acceso exclusivo a características avanzadas y prioridad en soporte.
+                  </p>
+                  <div className="text-center mt-4">
+                    <h6>Plan Premium: $99 MXN/mes</h6>
+                    <small className="text-muted">Cancelación en cualquier momento</small>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={() => setShowPagoModal(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={() => window.open("https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00", "_blank")}
+                  >
+                    Suscribirse ahora
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {!user && (
           <div className="text-center mt-4">
@@ -257,6 +260,5 @@ function App() {
     </Router>
   );
 }
-
 
 export default App;
