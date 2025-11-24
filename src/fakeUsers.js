@@ -14,4 +14,12 @@ export const fakeUsers = [
     password: "654321",
     role: "user",
   },
+  {
+  id: 3,
+  name: "Juan",
+  email: "local@mail.com",
+  password: "123456",
+  role: "admin",
+  membership: "premium_plus"
+},
 ];
