@@ -50,7 +50,45 @@ const PanelSuscripciones = () => {
     }
   ];
 
-  const handleSuscribirse = (planId) => {
+  const handleSuscribirse = async (planId) => {
+  const linksStripe = {
+    1: "https://buy.stripe.com/test_9B614magPcXTcMs5tKeIw01",
+    2: "https://buy.stripe.com/test_fZu3cucoX2jfcMscWceIw02",
+    3: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"
+  };
+
+  const tipos = {
+    1: "mensual",
+    2: "anual",
+    3: "plus"
+  };
+
+  // 1. Abre Stripe en una nueva pestaña
+  window.open(linksStripe[planId], "_blank");
+
+  // 2. Marca la suscripción en tu backend como activa
+  try {
+    await fetch("https://vetpet-sandbox-1.onrender.com/api/fake-subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({
+        plan: tipos[planId]
+      })
+    });
+
+    alert("Suscripción activada para pruebas!");
+  } catch (error) {
+    console.error(error);
+    alert("Hubo un error activando la suscripción.");
+  }
+};
+
+
+
+  /*const handleSuscribirse = (planId) => {
     // Aquí puedes manejar la redirección a Stripe según el plan
     const linksStripe = {
       1: "https://buy.stripe.com/test_9B614magPcXTcMs5tKeIw01", // Mensual
@@ -59,7 +97,7 @@ const PanelSuscripciones = () => {
     };
     
     window.open(linksStripe[planId], "_blank");
-  };
+  };*/
 
   return (
     <div className="suscripciones-container">
