@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Componentes
 import Navbar from './components/Navbar'; 
 import ProtectedRoute from './components/ProtectedRoute';
 import PanelSuscripciones from './components/PanelSuscripciones';
@@ -16,21 +15,17 @@ import ChatbotWidget from './components/ChatbotWidget';
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
 
 const AppContent = () => {
-  // --- Estados Globales ---
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
 
-  // --- Carga Inicial ---
   useEffect(() => {
-    // Iconos Bootstrap
     const link = document.createElement("link");
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
-    // Recuperar Sesión
     const token = localStorage.getItem('token');
     if (token) {
       if(token === 'fake-token'){
@@ -60,7 +55,6 @@ const AppContent = () => {
 
   return (
     <div>
-      {/* 1. VISTA NO LOGUEADO */}
       {!user ? (
         <div className="container mt-5">
           {showRegister ? (
@@ -77,35 +71,26 @@ const AppContent = () => {
           )}
         </div>
       ) : (
-        /* 2. VISTA LOGUEADO (Layout Principal) */
         <>
-          {/* Navbar SIEMPRE visible */}
           <Navbar 
             user={user}
             handleLogout={handleLogout}
             setShowContactModal={setShowContactModal}
           />
 
-          {/* Contenedor Principal con margen para no quedar bajo el Navbar */}
-          {/* Ajuste: el Navbar mide aprox 76px. Restamos eso al 100vh */}
           <div style={{ marginTop: '76px', minHeight: 'calc(100vh - 76px)' }}>
-            
             <Routes>
-              {/* Rutas Públicas/Generales */}
               <Route path="/" element={<Home />} />
               <Route path="/servicios" element={<Servicios />} />
               <Route path="/suscripciones" element={<PanelSuscripciones />} />
               <Route path="/perfil" element={<Perfil />} />
-              
-              {/* Ruta Agendar (Directa) */}
               <Route path="/agendar" element={<AgendarCita />} />
 
-              {/* DASHBOARD: Con ajuste de altura para que el sidebar se vea bien */}
+              {/* DASHBOARD: Permitimos 'admin' y 'partner' */}
               <Route 
                 path="/dashboard" 
                 element={
-                  <ProtectedRoute user={user} role="admin, veterinaria">
-                    {/* Contenedor exacto para que el Dashboard ocupe el resto de la pantalla */}
+                  <ProtectedRoute user={user} role="admin, partner">
                     <div style={{ height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
                        <AdminDashboard user={user} />
                     </div>
@@ -113,12 +98,10 @@ const AppContent = () => {
                 } 
               />
               
-              {/* Redirección por defecto */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </div>
 
-          {/* Chatbot (Siempre visible si suscrito) */}
           {user.subscription_active && (
             <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
               <ChatbotWidget />
@@ -127,7 +110,6 @@ const AppContent = () => {
         </>
       )}
 
-      {/* --- MODALES GLOBALES --- */}
       {showContactModal && (
         <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">

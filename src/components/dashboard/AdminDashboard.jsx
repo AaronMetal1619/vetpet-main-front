@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import StatsCards from './StatsCards'; // Asegúrate de tener este archivo o comenta la línea
+import VetsManagement from './VetsManagement'; // <--- Importamos el componente
 
-// Componentes Placeholder (Fake)
+// Componentes Placeholder
 const UsersTableFake = () => <div className="card p-4 shadow"><h3>Gestión de Usuarios</h3><p>Tabla de usuarios...</p></div>;
-const VetsTableFake = () => <div className="card p-4 shadow"><h3>Gestión de Veterinarias</h3><p>Tabla de veterinarias...</p></div>;
 const AppointmentsTableFake = () => <div className="card p-4 shadow"><h3>Historial de Citas</h3><p>Tabla de citas...</p></div>;
 
 const AdminDashboard = ({ user }) => {
@@ -14,29 +13,18 @@ const AdminDashboard = ({ user }) => {
         switch (activeTab) {
             case 'overview':
                 return (
-                    <>
-                        {/* Si tienes StatsCards úsalo, si no, comenta esto */}
-                        <StatsCards /> 
-                        
-                        <div className="row mt-4">
-                            <div className="col-12">
-                                <div className="card shadow-sm">
-                                    <div className="card-header bg-white">
-                                        <h5 className="mb-0">Actividad Reciente</h5>
-                                    </div>
-                                    <div className="card-body">
-                                        <ul className="list-group list-group-flush">
-                                            <li className="list-group-item">Nuevo usuario registrado.</li>
-                                            <li className="list-group-item">Cita #1234 completada.</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                    <div className="card shadow-sm">
+                        <div className="card-body">
+                            <h3>Bienvenido, {user.name}</h3>
+                            <p>Selecciona una opción del menú lateral.</p>
                         </div>
-                    </>
+                    </div>
                 );
             case 'users': return <UsersTableFake />;
-            case 'vets': return <VetsTableFake />;
+            
+            // Aquí mostramos el componente real
+            case 'vets': return <VetsManagement />;
+            
             case 'appointments': return <AppointmentsTableFake />;
             default: return <div>Seleccione una opción</div>;
         }
@@ -55,7 +43,8 @@ const AdminDashboard = ({ user }) => {
             <div className="flex-grow-1 bg-light p-4" style={{ overflowY: 'auto' }}>
                 <header className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="fw-bold text-dark m-0">
-                        {activeTab === 'overview' ? 'Panel de Control' : activeTab.toUpperCase()}
+                        {activeTab === 'overview' ? 'Panel de Control' : 
+                         activeTab === 'vets' ? 'VETERINARIAS' : activeTab.toUpperCase()}
                     </h2>
                 </header>
 

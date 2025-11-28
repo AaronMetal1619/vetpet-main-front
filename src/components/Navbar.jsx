@@ -6,7 +6,6 @@ const Navbar = ({ user, handleLogout, setShowContactModal }) => {
     <nav className="navbar navbar-expand-md navbar-dark fixed-top shadow-lg"
       style={{ background: 'linear-gradient(90deg, #6CA0DC, #89BFF1)', zIndex: 1030 }}>
       <div className="container-fluid">
-        {/* Marca / Logo */}
         <Link className="navbar-brand text-white fw-bold" to="/">AgendaVET</Link>
         
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
@@ -15,13 +14,13 @@ const Navbar = ({ user, handleLogout, setShowContactModal }) => {
 
         <div className="collapse navbar-collapse" id="navbarCollapse">
           <ul className="navbar-nav me-auto mb-2 mb-md-0">
-            
             <li className="nav-item">
               <Link className="nav-link text-white" to="/">Inicio</Link>
             </li>
 
-            {/* Botón Dashboard (Visible para Admin Y Veterinaria) */}
-            {user && (user.role === 'admin' || user.role === 'veterinaria') && (
+            {/* --- LÓGICA DE ROLES ACTUALIZADA --- */}
+            {/* Visible para Admin y Partner (Veterinaria) */}
+            {user && (user.role === 'admin' || user.role === 'partner') && (
               <li className="nav-item">
                 <Link className="nav-link text-white fw-bold bg-white bg-opacity-25 rounded px-2 mx-2" to="/dashboard">
                    <i className="bi bi-speedometer2 me-1"></i> Dashboard
@@ -32,20 +31,16 @@ const Navbar = ({ user, handleLogout, setShowContactModal }) => {
             <li className="nav-item">
               <Link className="nav-link text-white" to="/servicios">Ver Servicios</Link>
             </li>
-
-            {/* Contacto sigue siendo Modal */}
             <li className="nav-item">
               <a className="nav-link text-white" href="#" onClick={(e) => { e.preventDefault(); setShowContactModal(true); }}>
                 Contáctanos
               </a>
             </li>
-
             <li className="nav-item">
               <Link className="nav-link text-white" to="/suscripciones">Suscribirse</Link>
             </li> 
           </ul>
           
-          {/* Dropdown de Usuario */}
           <div className="dropdown">
             <button className="btn btn-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
               <img src={`https://ui-avatars.com/api/?background=random&name=${user.name || 'User'}`}
@@ -53,9 +48,7 @@ const Navbar = ({ user, handleLogout, setShowContactModal }) => {
               <span className="small fw-bold">{user.name || 'Usuario'}</span>
             </button>
             <ul className="dropdown-menu dropdown-menu-end shadow-lg">
-              <li>
-                <Link className="dropdown-item" to="/perfil">Ver perfil</Link>
-              </li>
+              <li><Link className="dropdown-item" to="/perfil">Ver perfil</Link></li>
               <li><hr className="dropdown-divider" /></li>
               <li>
                 <button className="dropdown-item text-danger" onClick={handleLogout}>
