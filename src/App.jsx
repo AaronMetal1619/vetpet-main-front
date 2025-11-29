@@ -21,26 +21,30 @@ const AppContent = () => {
   const [showPagoModal, setShowPagoModal] = useState(false);
 
   const location = useLocation();
+  // Detectar si estamos en el dashboard para ajustar el layout
   const isDashboard = location.pathname.startsWith('/dashboard');
 
   useEffect(() => {
+    // Cargar iconos
     const link = document.createElement("link");
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
+    // Verificar sesión existente
     const token = localStorage.getItem('token');
     if (token) {
       if(token === 'fake-token'){
          const localUser = JSON.parse(localStorage.getItem('userLocal'));
          if(localUser) setUser(localUser);
       } else {
-        // NUEVA URL
+        // 🔥 CORRECCIÓN AQUÍ: Usar la URL del nuevo backend
         axios.get('https://vetpet-back.onrender.com/api/me', {
           headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setUser(response.data))
         .catch(() => {
+          // Si el token no es válido o el servidor falla, cerramos sesión
           localStorage.removeItem('token');
           setUser(null);
         });
@@ -60,6 +64,7 @@ const AppContent = () => {
   return (
     <div className={isDashboard ? "container-fluid p-0" : "container mt-4"}>
       {!user ? (
+        // --- VISTA NO LOGUEADO ---
         <div className="container mt-5">
           {showRegister ? (
              <Register onRegister={handleLogin} />
@@ -75,7 +80,9 @@ const AppContent = () => {
           )}
         </div>
       ) : (
+        // --- VISTA LOGUEADO ---
         <>
+          {/* Navbar solo si NO estamos en dashboard */}
           {!isDashboard && (
             <Navbar 
               user={user}
@@ -84,6 +91,7 @@ const AppContent = () => {
             />
           )}
 
+          {/* Margen superior para el contenido si hay Navbar */}
           <div style={{ marginTop: !isDashboard ? '80px' : '0' }}>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -92,6 +100,7 @@ const AppContent = () => {
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/agendar" element={<AgendarCita />} />
 
+              {/* RUTA PROTEGIDA DASHBOARD */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -107,6 +116,7 @@ const AppContent = () => {
             </Routes>
           </div>
 
+          {/* Chatbot (Solo si tiene suscripción activa) */}
           {user.subscription_active && (
             <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
               <ChatbotWidget />
@@ -115,6 +125,7 @@ const AppContent = () => {
         </>
       )}
 
+      {/* MODAL CONTACTO */}
       {showContactModal && (
         <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">
