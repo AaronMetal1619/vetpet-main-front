@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 import Navbar from './components/Navbar'; 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -20,6 +20,9 @@ const AppContent = () => {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
 
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard');
+
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
@@ -32,7 +35,8 @@ const AppContent = () => {
          const localUser = JSON.parse(localStorage.getItem('userLocal'));
          if(localUser) setUser(localUser);
       } else {
-        axios.get('https://vetpet-sandbox-vkt2.onrender.com/api/me', {
+        // NUEVA URL
+        axios.get('https://vetpet-back.onrender.com/api/me', {
           headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setUser(response.data))
@@ -54,7 +58,7 @@ const AppContent = () => {
   const handleLogin = (userData) => setUser(userData);
 
   return (
-    <div>
+    <div className={isDashboard ? "container-fluid p-0" : "container mt-4"}>
       {!user ? (
         <div className="container mt-5">
           {showRegister ? (
@@ -72,13 +76,15 @@ const AppContent = () => {
         </div>
       ) : (
         <>
-          <Navbar 
-            user={user}
-            handleLogout={handleLogout}
-            setShowContactModal={setShowContactModal}
-          />
+          {!isDashboard && (
+            <Navbar 
+              user={user}
+              handleLogout={handleLogout}
+              setShowContactModal={setShowContactModal}
+            />
+          )}
 
-          <div style={{ marginTop: '76px', minHeight: 'calc(100vh - 76px)' }}>
+          <div style={{ marginTop: !isDashboard ? '80px' : '0' }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/servicios" element={<Servicios />} />
@@ -86,7 +92,6 @@ const AppContent = () => {
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/agendar" element={<AgendarCita />} />
 
-              {/* DASHBOARD: Permitimos 'admin' y 'partner' */}
               <Route 
                 path="/dashboard" 
                 element={

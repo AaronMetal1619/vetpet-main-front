@@ -18,19 +18,12 @@ const Login = ({ onLogin }) => {
     });
   };
 
-  // -----------------------------
-  // VALIDAR MEMBRESÍA PARA CHATBOT
-  // -----------------------------
   const canUseChatbot = (membership) => {
     if (!membership) return false;
-
     const valid = ["basica", "premium_plus", "premium_plus_anual"];
     return valid.includes(membership);
   };
 
-  // -----------------------------
-  // VALIDAR PERMISOS POR ROL
-  // -----------------------------
   const formatUserAccess = (user) => {
     return {
       ...user,
@@ -41,16 +34,11 @@ const Login = ({ onLogin }) => {
     };
   };
 
-  // -----------------------------
-  // SUBMIT LOGIN
-  // -----------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    // ---------------------------------------------------------
     // 1️⃣ LOGIN LOCAL (fakeUsers)
-    // ---------------------------------------------------------
     const localUser = fakeUsers.find(
       (u) =>
         u.email === credentials.email &&
@@ -59,25 +47,20 @@ const Login = ({ onLogin }) => {
 
     if (localUser) {
       const formattedUser = formatUserAccess(localUser);
-
       localStorage.setItem("token", "fake-token");
       localStorage.setItem("user", JSON.stringify(formattedUser));
-
       onLogin(formattedUser);
       return;
     }
 
-    // ---------------------------------------------------------
-    // 2️⃣ LOGIN REAL (API Laravel)
-    // ---------------------------------------------------------
+    // 2️⃣ LOGIN REAL (NUEVA URL)
     try {
       const response = await axios.post(
-        "https://vetpet-sandbox-1.onrender.com/api/login",
+        "https://vetpet-back.onrender.com/api/login",
         credentials
       );
 
       const { token, user } = response.data;
-
       const formattedUser = formatUserAccess(user);
 
       localStorage.setItem("token", token);
@@ -93,9 +76,6 @@ const Login = ({ onLogin }) => {
     setShowPassword(!showPassword);
   };
 
-  // ---------------------------------------------------------
-  // UI
-  // ---------------------------------------------------------
   return (
     <div className="row justify-content-center">
       <div className="col-lg-5 col-md-8">
@@ -119,7 +99,6 @@ const Login = ({ onLogin }) => {
             )}
 
             <form onSubmit={handleSubmit}>
-              {/* EMAIL */}
               <div className="mb-4">
                 <label className="form-label fw-semibold">
                   <i className="bi bi-envelope-fill text-primary me-2"></i>
@@ -141,7 +120,6 @@ const Login = ({ onLogin }) => {
                 </div>
               </div>
 
-              {/* CONTRASEÑA */}
               <div className="mb-4 position-relative">
                 <label className="form-label fw-semibold">
                   <i className="bi bi-lock-fill text-primary me-2"></i>
@@ -160,7 +138,6 @@ const Login = ({ onLogin }) => {
                     placeholder="••••••••"
                     required
                   />
-
                   <button
                     type="button"
                     className="input-group-text bg-light"
@@ -175,7 +152,6 @@ const Login = ({ onLogin }) => {
                 </div>
               </div>
 
-              {/* RECORDAR */}
               <div className="mb-4 form-check">
                 <input type="checkbox" className="form-check-input" id="rememberMe" />
                 <label className="form-check-label small" htmlFor="rememberMe">
@@ -183,13 +159,11 @@ const Login = ({ onLogin }) => {
                 </label>
               </div>
 
-              {/* BOTÓN */}
               <button type="submit" className="btn btn-primary w-100 py-2 fw-semibold">
                 <i className="bi bi-box-arrow-in-right me-2"></i>
                 Iniciar sesión
               </button>
 
-              {/* SOCIAL LOGIN */}
               <div className="d-flex align-items-center my-4">
                 <hr className="flex-grow-1" />
                 <span className="px-2 text-muted small">o continuar con</span>

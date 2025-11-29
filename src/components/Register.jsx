@@ -16,25 +16,21 @@ const Register = ({ onRegister }) => {
     setLoading(true);
 
     try {
-      console.log("Enviando datos de registro: ", formData); // Log para ver los datos que se envían
+      console.log("Enviando datos de registro: ", formData);
+      // NUEVA URL
       const response = await axios.post(
-      'https://vetpet-sandbox-vkt2.onrender.com/api/register',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: false, // 🔥 Importante si supports_credentials = true en Laravel
-      }
-    );
+        'https://vetpet-back.onrender.com/api/register',
+        formData,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: false, 
+        }
+      );
 
-
-      console.log("Respuesta del servidor: ", response.data); // Log para ver la respuesta del servidor
+      console.log("Respuesta del servidor: ", response.data);
 
       if (response.data?.token && response.data?.user) {
         localStorage.setItem('token', response.data.token);
-        console.log("Token guardado en localStorage: ", response.data.token); // Log para verificar el token guardado
-
         if (onRegister) {
           onRegister(response.data.user);
         }
@@ -42,7 +38,7 @@ const Register = ({ onRegister }) => {
         setError('No se recibió un token válido del servidor.');
       }
     } catch (error) {
-      console.error("Error durante el registro: ", error); // Log para ver el error
+      console.error("Error durante el registro: ", error);
       if (error.response?.data?.errors) {
         const errorMessages = Object.values(error.response.data.errors).flat().join(', ');
         setError(`Errores: ${errorMessages}`);
@@ -59,9 +55,7 @@ const Register = ({ onRegister }) => {
       <div className="container py-5">
         <div className="row justify-content-center">
           <div className="col-lg-5 col-md-8">
-            {/* Tarjeta de Registro */}
             <div className="card shadow-lg border-0 rounded-4 overflow-hidden">
-              {/* Encabezado con imagen */}
               <div className="bg-primary py-4 text-center text-white">
                 <img
                   src="https://cdn-icons-png.flaticon.com/512/2919/2919600.png"
@@ -73,7 +67,6 @@ const Register = ({ onRegister }) => {
                 <p className="mb-0 opacity-75">Únete a nuestra comunidad</p>
               </div>
 
-              {/* Cuerpo del formulario */}
               <div className="card-body p-4 p-md-5">
                 {error && (
                   <div className="alert alert-danger d-flex align-items-center mb-4 py-2">
@@ -83,17 +76,12 @@ const Register = ({ onRegister }) => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                  {/* Campo Nombre */}
                   <div className="mb-4">
                     <label htmlFor="name" className="form-label fw-semibold">
                       <i className="bi bi-person-fill text-primary me-2"></i>
                       Nombre Completo
                     </label>
-                    <div className="input-group">
-                      <span className="input-group-text bg-light">
-                        <i className="bi bi-person text-muted"></i>
-                      </span>
-                      <input
+                    <input
                         type="text"
                         name="name"
                         value={formData.name}
@@ -102,20 +90,14 @@ const Register = ({ onRegister }) => {
                         placeholder="Escribe tu nombre"
                         required
                       />
-                    </div>
                   </div>
 
-                  {/* Campo Email */}
                   <div className="mb-4">
                     <label htmlFor="email" className="form-label fw-semibold">
                       <i className="bi bi-envelope-fill text-primary me-2"></i>
                       Correo Electrónico
                     </label>
-                    <div className="input-group">
-                      <span className="input-group-text bg-light">
-                        <i className="bi bi-envelope text-muted"></i>
-                      </span>
-                      <input
+                    <input
                         type="email"
                         name="email"
                         value={formData.email}
@@ -124,20 +106,14 @@ const Register = ({ onRegister }) => {
                         placeholder="Correo electrónico"
                         required
                       />
-                    </div>
                   </div>
 
-                  {/* Campo Contraseña */}
                   <div className="mb-4">
                     <label htmlFor="password" className="form-label fw-semibold">
                       <i className="bi bi-key-fill text-primary me-2"></i>
                       Contraseña
                     </label>
-                    <div className="input-group">
-                      <span className="input-group-text bg-light">
-                        <i className="bi bi-lock text-muted"></i>
-                      </span>
-                      <input
+                    <input
                         type="password"
                         name="password"
                         value={formData.password}
@@ -146,10 +122,8 @@ const Register = ({ onRegister }) => {
                         placeholder="Crea una contraseña"
                         required
                       />
-                    </div>
                   </div>
 
-                  {/* Botón de Registro */}
                   <div className="d-grid">
                     <button
                       type="submit"

@@ -26,11 +26,12 @@ const VetsManagement = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://vetpet-sandbox-vkt2.onrender.com/api/users', {
+            // NUEVA URL
+            const response = await axios.get('https://vetpet-back.onrender.com/api/users', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            // Filtramos las veterinarias
+            // Filtramos las veterinarias (partner + veterinaria)
             const soloVets = response.data.filter(u => u.role === 'partner' && u.partner_type === 'veterinaria');
             setVets(soloVets);
         } catch (error) {
@@ -65,19 +66,19 @@ const VetsManagement = () => {
 
         try {
             if (isEditing) {
-                // UPDATE
-                await axios.put(`https://vetpet-sandbox-vkt2.onrender.com/api/users/${formData.id}`, formData, {
+                // UPDATE (NUEVA URL)
+                await axios.put(`https://vetpet-back.onrender.com/api/users/${formData.id}`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert("Actualizado correctamente.");
             } else {
-                // CREATE
+                // CREATE (NUEVA URL)
                 const payload = {
                     ...formData,
                     role: 'partner',
                     partner_type: 'veterinaria'
                 };
-                await axios.post('https://vetpet-sandbox-vkt2.onrender.com/api/admin/users', payload, {
+                await axios.post('https://vetpet-back.onrender.com/api/admin/users', payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert("Veterinaria creada exitosamente.");
@@ -94,7 +95,8 @@ const VetsManagement = () => {
         if (window.confirm("¿Eliminar veterinaria?")) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(`https://vetpet-sandbox-vkt2.onrender.com/api/users/${id}`, {
+                // DELETE (NUEVA URL)
+                await axios.delete(`https://vetpet-back.onrender.com/api/users/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert("Eliminado.");

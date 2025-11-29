@@ -4,11 +4,10 @@ import { auth, googleProvider, facebookProvider, microsoftProvider } from '../fi
 import axios from 'axios';
 
 async function sendTokenToBackend(idToken) {
-  // endpoint que validará el idToken con Firebase Admin
-  const res = await axios.post('https://vetpet-sandbox-1.onrender.com/api/auth/firebase', { idToken });
-  return res.data; // { token: 'YOUR_APP_TOKEN', user: {...} }
+  // NUEVA URL
+  const res = await axios.post('https://vetpet-back.onrender.com/api/auth/firebase', { idToken });
+  return res.data; 
 }
-
 
 export default function SocialLogin({ onLogin }) {
   const handleProvider = async (provider) => {
@@ -17,7 +16,6 @@ export default function SocialLogin({ onLogin }) {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      // Envía el idToken (Firebase) al backend para verificar y crear sesión
       const data = await sendTokenToBackend(idToken);
 
       if (data?.token) {
@@ -27,7 +25,6 @@ export default function SocialLogin({ onLogin }) {
         localStorage.setItem("userLocal", JSON.stringify(data.user));
         if (onLogin) onLogin(data.user);
       } else {
-        // Fallback: guarda info mínima del user de Firebase
         localStorage.setItem("userLocal", JSON.stringify({
           uid: user.uid,
           email: user.email,
@@ -43,7 +40,6 @@ export default function SocialLogin({ onLogin }) {
       }
     } catch (err) {
       console.error("Social login error:", err);
-      // Mensajes amigables al usuario
       if (err?.code === "auth/popup-closed-by-user") {
         alert("Has cerrado la ventana de autenticación.");
       } else {

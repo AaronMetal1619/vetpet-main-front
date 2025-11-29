@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./PanelSuscripciones.css"; // CSS para estilos personalizados
+import "./PanelSuscripciones.css"; 
 
 const PanelSuscripciones = () => {
   const navigate = useNavigate();
@@ -51,70 +51,54 @@ const PanelSuscripciones = () => {
   ];
 
   const handleSuscribirse = async (planId) => {
-  const linksStripe = {
-    1: "https://buy.stripe.com/test_9B614magPcXTcMs5tKeIw01",
-    2: "https://buy.stripe.com/test_fZu3cucoX2jfcMscWceIw02",
-    3: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"
-  };
-
-  const tipos = {
-    1: "mensual",
-    2: "anual",
-    3: "plus"
-  };
-
-  // 1. Abre Stripe en una nueva pestaña
-  window.open(linksStripe[planId], "_blank");
-
-  // 2. Marca la suscripción en tu backend como activa
-  try {
-    await fetch("https://vetpet-sandbox-1.onrender.com/api/fake-subscribe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify({
-        plan: tipos[planId]
-      })
-    });
-
-    alert("Suscripción activada para pruebas!");
-  } catch (error) {
-    console.error(error);
-    alert("Hubo un error activando la suscripción.");
-  }
-};
-
-
-
-  /*const handleSuscribirse = (planId) => {
-    // Aquí puedes manejar la redirección a Stripe según el plan
     const linksStripe = {
-      1: "https://buy.stripe.com/test_9B614magPcXTcMs5tKeIw01", // Mensual
-      2: "https://buy.stripe.com/test_fZu3cucoX2jfcMscWceIw02", // Anual
-      3: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"  // Plus
+      1: "https://buy.stripe.com/test_9B614magPcXTcMs5tKeIw01",
+      2: "https://buy.stripe.com/test_fZu3cucoX2jfcMscWceIw02",
+      3: "https://buy.stripe.com/test_9B6bJ0agP5vraEkf4keIw00"
     };
-    
+
+    const tipos = {
+      1: "mensual",
+      2: "anual",
+      3: "plus"
+    };
+
+    // 1. Abre Stripe
     window.open(linksStripe[planId], "_blank");
-  };*/
+
+    // 2. Marca la suscripción en backend (NUEVA URL)
+    try {
+      await fetch("https://vetpet-back.onrender.com/api/fake-subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+          plan: tipos[planId]
+        })
+      });
+
+      alert("Suscripción activada para pruebas!");
+    } catch (error) {
+      console.error(error);
+      alert("Hubo un error activando la suscripción.");
+    }
+  };
 
   return (
     <div className="suscripciones-container">
-      {/* Header */}
       <div className="suscripciones-header text-center mb-5">
         <h1 className="display-4 fw-bold text-primary">Únete a la familia VetPet</h1>
         <p className="lead text-muted">Elige el plan que mejor se adapte a tus necesidades</p>
       </div>
 
-      {/* Planes de Suscripción */}
       <div className="container">
         <div className="row justify-content-center g-4">
           {planes.map((plan) => (
             <div key={plan.id} className="col-lg-4 col-md-6">
               <div className={`card suscripcion-card h-100 ${plan.destacado ? 'destacado' : ''}`}>
                 <div className="card-body p-4">
-                  {/* Badge de ahorro si existe */}
                   {plan.ahorro && (
                     <div className="badge-ahorro">
                       <span className="badge bg-success">{plan.ahorro}</span>
@@ -128,7 +112,6 @@ const PanelSuscripciones = () => {
                     <small className="text-muted">{plan.periodo}</small>
                   </div>
 
-                  {/* Características */}
                   <ul className="list-unstyled mb-4">
                     {plan.caracteristicas.map((caracteristica, index) => (
                       <li key={index} className="mb-2">
@@ -140,7 +123,6 @@ const PanelSuscripciones = () => {
                     ))}
                   </ul>
 
-                  {/* Botón de suscripción */}
                   <div className="text-center mt-auto">
                     <button 
                       className={`btn btn-lg w-100 ${plan.destacado ? 'btn-primary' : 'btn-outline-primary'}`}
@@ -155,7 +137,6 @@ const PanelSuscripciones = () => {
           ))}
         </div>
 
-        {/* Footer informativo */}
         <div className="row mt-5">
           <div className="col-12 text-center">
             <p className="text-muted">
@@ -164,7 +145,6 @@ const PanelSuscripciones = () => {
           </div>
         </div>
 
-        {/* Botón de regreso */}
         <div className="row mt-4">
           <div className="col-12 text-center">
             <button 
