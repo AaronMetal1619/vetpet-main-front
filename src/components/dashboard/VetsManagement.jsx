@@ -1,5 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// 📍 Fix para el icono de marcador en React Leaflet
+// (A veces no carga la imagen por defecto, esto lo arregla)
+const icon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 const VetsManagement = () => {
     const [vets, setVets] = useState([]);
@@ -8,10 +23,6 @@ const VetsManagement = () => {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     
-    // Referencia para el mapa
-    const mapRef = useRef(null);
-    const markerRef = useRef(null);
-
     const [formData, setFormData] = useState({
         id: '',
         name: '',
@@ -19,74 +30,32 @@ const VetsManagement = () => {
         password: '',
         phone: '',
         address: '',
-        latitude: '',  // Nuevo
-        longitude: ''  // Nuevo
+        latitude: '',
+        longitude: ''
     });
 
     useEffect(() => {
         fetchVets();
     }, []);
 
-    // Inicializar mapa cuando se abre el modal
-    useEffect(() => {
-        if (showModal && window.google) {
-            // Pequeño delay para asegurar que el modal se renderizó
-            setTimeout(() => initMap(), 300);
-        }
-    }, [showModal]);
-
-    const initMap = () => {
-        const mapElement = document.getElementById('vet-map');
-        if (!mapElement) return;
-
-        // Ubicación inicial (Ej: CDMX o la ubicación actual de la vet si estamos editando)
-        const initialPos = (formData.latitude && formData.longitude) 
-            ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
-            : { lat: 19.4326, lng: -99.1332 }; // Default (CDMX) - Cámbialo a tu ciudad
-
-        const map = new window.google.maps.Map(mapElement, {
-            center: initialPos,
-            zoom: 13,
-            streetViewControl: false,
-            mapTypeControl: false
+    // --- Componente interno para detectar clics en el mapa ---
+    const LocationMarker = () => {
+        useMapEvents({
+            click(e) {
+                const { lat, lng } = e.latlng;
+                // Guardamos coordenadas en el estado
+                setFormData(prev => ({
+                    ...prev,
+                    latitude: lat,
+                    longitude: lng
+                }));
+            },
         });
 
-        // Crear marcador si ya hay coordenadas
-        if (formData.latitude && formData.longitude) {
-            placeMarker(initialPos, map);
-        }
-
-        // Evento Click en el mapa
-        map.addListener("click", (e) => {
-            const clickedPos = {
-                lat: e.latLng.lat(),
-                lng: e.latLng.lng()
-            };
-            placeMarker(clickedPos, map);
-            
-            // Actualizar estado
-            setFormData(prev => ({
-                ...prev,
-                latitude: clickedPos.lat,
-                longitude: clickedPos.lng
-            }));
-        });
-
-        mapRef.current = map;
-    };
-
-    const placeMarker = (location, map) => {
-        // Si ya existe marcador, lo movemos
-        if (markerRef.current) {
-            markerRef.current.setPosition(location);
-        } else {
-            // Si no, creamos uno nuevo
-            markerRef.current = new window.google.maps.Marker({
-                position: location,
-                map: map,
-                animation: window.google.maps.Animation.DROP
-            });
-        }
+        // Si hay coordenadas, mostramos el marcador
+        return formData.latitude && formData.longitude ? (
+            <Marker position={[formData.latitude, formData.longitude]} icon={icon} />
+        ) : null;
     };
 
     const fetchVets = async () => {
@@ -112,8 +81,6 @@ const VetsManagement = () => {
     const resetForm = () => {
         setFormData({ id: '', name: '', email: '', password: '', phone: '', address: '', latitude: '', longitude: '' });
         setIsEditing(false);
-        if (markerRef.current) markerRef.current.setMap(null); // Limpiar marcador
-        markerRef.current = null;
     };
 
     const openModal = (vet = null) => {
@@ -122,8 +89,9 @@ const VetsManagement = () => {
             setFormData({ 
                 ...vet, 
                 password: '',
-                latitude: vet.latitude || '',
-                longitude: vet.longitude || ''
+                // Aseguramos que sean números si existen
+                latitude: vet.latitude ? parseFloat(vet.latitude) : '',
+                longitude: vet.longitude ? parseFloat(vet.longitude) : ''
             }); 
         } else {
             resetForm();
@@ -179,7 +147,9 @@ const VetsManagement = () => {
         <div className="card shadow-sm border-0">
             <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 className="m-0 fw-bold">Veterinarias</h5>
-                <button className="btn btn-success" onClick={() => openModal()}><i className="bi bi-plus-lg me-2"></i> Nueva</button>
+                <button className="btn btn-success" onClick={() => openModal()}>
+                    <i className="bi bi-plus-lg me-2"></i> Nueva
+                </button>
             </div>
             <div className="card-body">
                 <input type="text" className="form-control mb-3" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -195,9 +165,9 @@ const VetsManagement = () => {
                                     </td>
                                     <td>
                                         {v.latitude ? (
-                                            <span className="text-success"><i className="bi bi-geo-alt-fill"></i> Ubicada</span>
+                                            <span className="text-success"><i className="bi bi-geo-alt-fill"></i> Con Mapa</span>
                                         ) : (
-                                            <span className="text-muted">Sin mapa</span>
+                                            <span className="text-muted">Sin ubicación</span>
                                         )}
                                         <div className="small text-muted">{v.address}</div>
                                     </td>
@@ -214,8 +184,8 @@ const VetsManagement = () => {
 
             {/* MODAL */}
             {showModal && (
-                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog modal-lg modal-dialog-centered"> {/* Modal más grande (modal-lg) */}
+                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+                    <div className="modal-dialog modal-lg modal-dialog-centered">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">{isEditing ? 'Editar' : 'Nueva'} Veterinaria</h5>
@@ -244,21 +214,34 @@ const VetsManagement = () => {
                                             </div>
                                             <div className="row">
                                                 <div className="col-6">
-                                                    <small className="text-muted">Lat: {formData.latitude || 'N/A'}</small>
+                                                    <small className="text-muted">Lat: {formData.latitude ? parseFloat(formData.latitude).toFixed(4) : 'N/A'}</small>
                                                 </div>
                                                 <div className="col-6">
-                                                    <small className="text-muted">Lng: {formData.longitude || 'N/A'}</small>
+                                                    <small className="text-muted">Lng: {formData.longitude ? parseFloat(formData.longitude).toFixed(4) : 'N/A'}</small>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Columna Derecha: Mapa */}
+                                        {/* Columna Derecha: Mapa LEAFLET */}
                                         <div className="col-md-6">
-                                            <label className="form-label text-primary"><i className="bi bi-pin-map-fill"></i> Selecciona la ubicación en el mapa</label>
-                                            <div 
-                                                id="vet-map" 
-                                                style={{ width: '100%', height: '300px', borderRadius: '8px', border: '1px solid #ccc' }}
-                                            ></div>
+                                            <label className="form-label text-primary"><i className="bi bi-pin-map-fill"></i> Toca en el mapa para ubicar</label>
+                                            
+                                            <div style={{ height: '300px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd' }}>
+                                                
+                                                <MapContainer 
+                                                    center={formData.latitude ? [formData.latitude, formData.longitude] : [19.4326, -99.1332]} // CDMX por defecto
+                                                    zoom={13} 
+                                                    style={{ height: '100%', width: '100%' }}
+                                                >
+                                                    <TileLayer
+                                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                    />
+                                                    <LocationMarker />
+                                                </MapContainer>
+
+                                            </div>
+                                            <small className="text-muted d-block mt-1">Usa el zoom para mayor precisión.</small>
                                         </div>
                                     </div>
                                 </div>
