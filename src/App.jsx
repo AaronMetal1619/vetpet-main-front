@@ -13,6 +13,7 @@ import AgendarCita from './components/AgendarCita';
 import Servicios from './components/Servicios';
 import ChatbotWidget from './components/ChatbotWidget';
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
+import VetFormPage from './components/dashboard/VetFormPage'; // <--- IMPORTACIÓN NUEVA
 
 const AppContent = () => {
   const [user, setUser] = useState(null);
@@ -21,24 +22,21 @@ const AppContent = () => {
   const [showPagoModal, setShowPagoModal] = useState(false);
 
   const location = useLocation();
-  // Detectar si estamos en la ruta del dashboard para ajustar el layout
-  const isDashboard = location.pathname.startsWith('/dashboard');
+  // Detectar si estamos en la ruta del dashboard o en la creación de veterinarias para ajustar el layout
+  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/create-vet');
 
   useEffect(() => {
-    // Cargar iconos de Bootstrap
     const link = document.createElement("link");
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
-    // Verificar sesión existente
     const token = localStorage.getItem('token');
     if (token) {
       if(token === 'fake-token'){
          const localUser = JSON.parse(localStorage.getItem('userLocal'));
          if(localUser) setUser(localUser);
       } else {
-        // Conexión con el Backend correcto
         axios.get('https://vetpet-back.onrender.com/api/me', {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -55,17 +53,16 @@ const AppContent = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userLocal');
     setUser(null);
-    window.location.href = "/"; // Recarga completa para limpiar estados
+    window.location.href = "/"; 
   };
 
   const handleLogin = (userData) => setUser(userData);
 
   return (
-    // Si estamos en dashboard, usamos contenedor fluido (sin márgenes laterales)
+    // Usamos container-fluid si es dashboard o create-vet para tener más espacio
     <div className={isDashboard ? "container-fluid p-0" : "container mt-4"}>
       
       {!user ? (
-        // === VISTA NO LOGUEADO ===
         <div className="container mt-5">
           {showRegister ? (
              <Register onRegister={handleLogin} />
@@ -81,7 +78,6 @@ const AppContent = () => {
           )}
         </div>
       ) : (
-        // === VISTA AUTENTICADA ===
         <>
           {/* Navbar visible solo si NO estamos en el Dashboard */}
           {!isDashboard && (
@@ -92,7 +88,7 @@ const AppContent = () => {
             />
           )}
 
-          {/* Ajuste de margen superior para no quedar debajo del Navbar fijo */}
+          {/* Ajuste de margen superior para no quedar debajo del Navbar fijo si se muestra */}
           <div style={{ marginTop: !isDashboard ? '80px' : '0' }}>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -101,7 +97,7 @@ const AppContent = () => {
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/agendar" element={<AgendarCita />} />
 
-              {/* RUTA PROTEGIDA DASHBOARD (Admin y Partner) */}
+              {/* RUTA PROTEGIDA DASHBOARD */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -112,20 +108,26 @@ const AppContent = () => {
                   </ProtectedRoute>
                 } 
               />
+
+              {/* 🔥 NUEVA RUTA PARA FORMULARIO DE VETERINARIAS */}
+              <Route 
+                path="/create-vet" 
+                element={
+                  <ProtectedRoute user={user} role="admin, partner">
+                     <VetFormPage />
+                  </ProtectedRoute>
+                } 
+              />
               
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </div>
 
           {/* CHATBOT */}
-          {/* Ya no filtramos aquí. El componente ChatbotWidget decide si se muestra o no según el rol/suscripción */}
           <ChatbotWidget />
-          
         </>
       )}
 
-      {/* --- MODALES --- */}
-      
       {showContactModal && (
         <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">
@@ -149,7 +151,6 @@ const AppContent = () => {
   );
 };
 
-// --- Componente Wrapper Principal ---
 function App() {
   return (
     <Router>
