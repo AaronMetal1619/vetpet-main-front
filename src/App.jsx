@@ -13,7 +13,7 @@ import AgendarCita from './components/AgendarCita';
 import Servicios from './components/Servicios';
 import ChatbotWidget from './components/ChatbotWidget';
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
-import VetFormPage from './components/dashboard/VetFormPage'; // <--- IMPORTACIÓN NUEVA
+import VetFormPage from './components/dashboard/VetFormPage'; 
 
 const AppContent = () => {
   const [user, setUser] = useState(null);
@@ -22,8 +22,10 @@ const AppContent = () => {
   const [showPagoModal, setShowPagoModal] = useState(false);
 
   const location = useLocation();
-  // Detectar si estamos en la ruta del dashboard o en la creación de veterinarias para ajustar el layout
-  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/create-vet');
+  
+  // Usamos esto SOLO para saber si usamos ancho completo (fluid) o con márgenes (container)
+  // YA NO LO USAMOS PARA OCULTAR EL NAVBAR
+  const isFullWidthPage = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/create-vet');
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -53,14 +55,14 @@ const AppContent = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userLocal');
     setUser(null);
-    window.location.href = "/"; 
+    window.location.href = "/";
   };
 
   const handleLogin = (userData) => setUser(userData);
 
   return (
-    // Usamos container-fluid si es dashboard o create-vet para tener más espacio
-    <div className={isDashboard ? "container-fluid p-0" : "container mt-4"}>
+    // Si es una página tipo dashboard, usamos todo el ancho. Si es normal, usamos container centrado.
+    <div className={isFullWidthPage ? "container-fluid p-0" : "container mt-4"}>
       
       {!user ? (
         <div className="container mt-5">
@@ -79,17 +81,16 @@ const AppContent = () => {
         </div>
       ) : (
         <>
-          {/* Navbar visible solo si NO estamos en el Dashboard */}
-          {!isDashboard && (
-            <Navbar 
-              user={user}
-              handleLogout={handleLogout}
-              setShowContactModal={setShowContactModal}
-            />
-          )}
+          {/* ✅ NAVBAR SIEMPRE VISIBLE */}
+          <Navbar 
+            user={user}
+            handleLogout={handleLogout}
+            setShowContactModal={setShowContactModal}
+          />
 
-          {/* Ajuste de margen superior para no quedar debajo del Navbar fijo si se muestra */}
-          <div style={{ marginTop: !isDashboard ? '80px' : '0' }}>
+          {/* ✅ CONTENIDO CON MARGEN SUPERIOR SIEMPRE */}
+          {/* El navbar es fixed-top (aprox 76px), empujamos el contenido para que no se tape */}
+          <div style={{ marginTop: '76px', minHeight: 'calc(100vh - 76px)' }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/servicios" element={<Servicios />} />
@@ -102,6 +103,7 @@ const AppContent = () => {
                 path="/dashboard" 
                 element={
                   <ProtectedRoute user={user} role="admin, partner">
+                    {/* Ajustamos altura para que el sidebar llene lo que sobra de pantalla */}
                     <div style={{ height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
                        <AdminDashboard user={user} />
                     </div>
@@ -109,12 +111,15 @@ const AppContent = () => {
                 } 
               />
 
-              {/* 🔥 NUEVA RUTA PARA FORMULARIO DE VETERINARIAS */}
+              {/* RUTA FORMULARIO VETERINARIAS */}
               <Route 
                 path="/create-vet" 
                 element={
                   <ProtectedRoute user={user} role="admin, partner">
-                     <VetFormPage />
+                     {/* Un contenedor interno para dar aire al formulario */}
+                     <div className="container py-4">
+                        <VetFormPage />
+                     </div>
                   </ProtectedRoute>
                 } 
               />
@@ -123,7 +128,6 @@ const AppContent = () => {
             </Routes>
           </div>
 
-          {/* CHATBOT */}
           <ChatbotWidget />
         </>
       )}

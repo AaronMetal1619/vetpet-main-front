@@ -47,7 +47,8 @@ const Sidebar = ({ activeTab, setActiveTab, userRole }) => {
       
       <hr />
       <div className="text-small text-muted text-center">
-        Rol: {userRole.toUpperCase()}
+        {/* Agregamos el ? para evitar error si userRole es null al inicio */}
+        Rol: {userRole?.toUpperCase() || 'USUARIO'}
       </div>
     </div>
   );
