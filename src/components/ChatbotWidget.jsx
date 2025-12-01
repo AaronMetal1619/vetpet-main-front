@@ -70,7 +70,7 @@ const ChatbotWidget = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: getUserId(),
-          message: userMessage,
+          text: userMessage,
           location: userLocation // 📍 Enviamos la ubicación a n8n
         })
       });
