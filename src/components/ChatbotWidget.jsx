@@ -7,6 +7,7 @@ const ChatbotWidget = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false); // Estado para abrir/cerrar
+  const [userLocation, setUserLocation] = useState(null); // 📍 Nuevo estado para ubicación
   const messagesEndRef = useRef(null);
 
   // ⬅️ 1. Obtener usuario
@@ -19,10 +20,29 @@ const ChatbotWidget = () => {
   
   const canViewChatbot =
     role === "admin" ||
-    role === "partner" || // Antes era 'veterinaria', ahora 'partner'
-    (role === "user" && subscriptionActive === true); // Antes 'usuario'
+    role === "partner" || 
+    role === "veterinaria" ||
+    (role === "user" && subscriptionActive === true);
 
-  // ⬅️ 3. Si NO tiene permiso, no renderizamos NADA (ni el botón)
+  // ⬅️ 3. Obtener Ubicación del Usuario (NUEVO)
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          console.log("📍 Ubicación detectada:", position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.warn("⚠️ No se pudo obtener la ubicación:", error.message);
+        }
+      );
+    }
+  }, []);
+
+  // ⬅️ 4. Si NO tiene permiso, no renderizamos NADA
   if (!canViewChatbot) return null;
 
   // Scroll automático al último mensaje
@@ -32,13 +52,12 @@ const ChatbotWidget = () => {
     }
   }, [messages, isOpen]);
 
-  const getUserId = () => storedUser?.id || null;
+  const getUserId = () => storedUser?.id || 'guest';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const user_id = getUserId();
     const userMessage = input;
     
     // Limpiar input y añadir mensaje usuario
@@ -50,8 +69,9 @@ const ChatbotWidget = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id,
+          user_id: getUserId(),
           message: userMessage,
+          location: userLocation // 📍 Enviamos la ubicación a n8n
         })
       });
 
@@ -107,6 +127,7 @@ const ChatbotWidget = () => {
               <div style={{ textAlign: 'center', marginTop: '50px', color: '#aaa' }}>
                 <i className="bi bi-chat-dots" style={{ fontSize: '2rem' }}></i>
                 <p>¡Hola! Soy tu asistente virtual.<br/>¿En qué puedo ayudarte?</p>
+                {userLocation && <p style={{fontSize: '0.8rem', color: 'green'}}>📍 Ubicación activa</p>}
               </div>
             )}
             
@@ -120,7 +141,8 @@ const ChatbotWidget = () => {
                   backgroundColor: msg.from === "bot" ? "#e9ecef" : "#007bff",
                   color: msg.from === "bot" ? "#333" : "white",
                   borderBottomLeftRadius: msg.from === "bot" ? "2px" : "15px",
-                  borderBottomRightRadius: msg.from === "user" ? "2px" : "15px"
+                  borderBottomRightRadius: msg.from === "user" ? "2px" : "15px",
+                  whiteSpace: 'pre-line' // Permite saltos de línea en la respuesta del bot
                 }}>
                   {msg.text}
                 </div>
