@@ -2,43 +2,53 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
+// Componentes Generales
 import Navbar from './components/Navbar'; 
 import ProtectedRoute from './components/ProtectedRoute';
-import PanelSuscripciones from './components/PanelSuscripciones';
+import ChatbotWidget from './components/ChatbotWidget';
+
+// Páginas Públicas
 import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import Perfil from './components/Perfil';
-import AgendarCita from './components/AgendarCita';
 import Servicios from './components/Servicios';
-import ChatbotWidget from './components/ChatbotWidget';
+import PanelSuscripciones from './components/PanelSuscripciones';
+import AgendarCita from './components/AgendarCita'; // Agendar del lado del cliente (Mapa)
+
+// Páginas del Dashboard (Privadas)
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
 import VetFormPage from './components/dashboard/VetFormPage'; 
+import AppointmentFormPage from './components/dashboard/AppointmentFormPage'; // ✅ NUEVO IMPORT
 
 const AppContent = () => {
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [showPagoModal, setShowPagoModal] = useState(false);
 
   const location = useLocation();
   
-  // Usamos esto SOLO para saber si usamos ancho completo (fluid) o con márgenes (container)
-  // YA NO LO USAMOS PARA OCULTAR EL NAVBAR
-  const isFullWidthPage = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/create-vet');
+  // Lógica para saber cuándo usar "container-fluid" (ancho completo) vs "container" (centrado)
+  // Usamos ancho completo en el Dashboard y en los Formularios de Gestión
+  const isFullWidthPage = location.pathname.startsWith('/dashboard') || 
+                          location.pathname.startsWith('/create-vet') ||
+                          location.pathname.startsWith('/create-appointment');
 
   useEffect(() => {
+    // Cargar iconos
     const link = document.createElement("link");
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
+    // Validar sesión
     const token = localStorage.getItem('token');
     if (token) {
       if(token === 'fake-token'){
          const localUser = JSON.parse(localStorage.getItem('userLocal'));
          if(localUser) setUser(localUser);
       } else {
+        // ✅ URL DEL BACKEND NUEVO
         axios.get('https://vetpet-back.onrender.com/api/me', {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -61,10 +71,10 @@ const AppContent = () => {
   const handleLogin = (userData) => setUser(userData);
 
   return (
-    // Si es una página tipo dashboard, usamos todo el ancho. Si es normal, usamos container centrado.
     <div className={isFullWidthPage ? "container-fluid p-0" : "container mt-4"}>
       
       {!user ? (
+        // === USUARIO NO LOGUEADO ===
         <div className="container mt-5">
           {showRegister ? (
              <Register onRegister={handleLogin} />
@@ -80,30 +90,32 @@ const AppContent = () => {
           )}
         </div>
       ) : (
+        // === USUARIO LOGUEADO ===
         <>
-          {/* ✅ NAVBAR SIEMPRE VISIBLE */}
+          {/* Navbar visible siempre */}
           <Navbar 
             user={user}
             handleLogout={handleLogout}
             setShowContactModal={setShowContactModal}
           />
 
-          {/* ✅ CONTENIDO CON MARGEN SUPERIOR SIEMPRE */}
-          {/* El navbar es fixed-top (aprox 76px), empujamos el contenido para que no se tape */}
+          {/* Margen para evitar que el contenido quede bajo el Navbar */}
           <div style={{ marginTop: '76px', minHeight: 'calc(100vh - 76px)' }}>
             <Routes>
+              {/* Rutas Públicas (para usuario logueado) */}
               <Route path="/" element={<Home />} />
               <Route path="/servicios" element={<Servicios />} />
               <Route path="/suscripciones" element={<PanelSuscripciones />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/agendar" element={<AgendarCita />} />
 
-              {/* RUTA PROTEGIDA DASHBOARD */}
+              {/* 🛡️ RUTAS PROTEGIDAS (ADMIN / PARTNER) */}
+              
+              {/* 1. Dashboard Principal */}
               <Route 
                 path="/dashboard" 
                 element={
                   <ProtectedRoute user={user} role="admin, partner">
-                    {/* Ajustamos altura para que el sidebar llene lo que sobra de pantalla */}
                     <div style={{ height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
                        <AdminDashboard user={user} />
                     </div>
@@ -111,14 +123,25 @@ const AppContent = () => {
                 } 
               />
 
-              {/* RUTA FORMULARIO VETERINARIAS */}
+              {/* 2. Formulario Crear/Editar Veterinaria */}
               <Route 
                 path="/create-vet" 
                 element={
                   <ProtectedRoute user={user} role="admin, partner">
-                     {/* Un contenedor interno para dar aire al formulario */}
                      <div className="container py-4">
                         <VetFormPage />
+                     </div>
+                  </ProtectedRoute>
+                } 
+              />
+
+              {/* 3. Formulario Crear Cita (✅ NUEVO) */}
+              <Route 
+                path="/create-appointment" 
+                element={
+                  <ProtectedRoute user={user} role="admin, partner">
+                     <div className="container py-4">
+                        <AppointmentFormPage />
                      </div>
                   </ProtectedRoute>
                 } 
@@ -128,10 +151,12 @@ const AppContent = () => {
             </Routes>
           </div>
 
+          {/* Widget Chatbot */}
           <ChatbotWidget />
         </>
       )}
 
+      {/* Modales Globales */}
       {showContactModal && (
         <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">

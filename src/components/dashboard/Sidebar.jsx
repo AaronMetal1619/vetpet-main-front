@@ -19,22 +19,32 @@ const Sidebar = ({ activeTab, setActiveTab, userRole }) => {
             <i className="bi bi-speedometer2 me-2"></i> Resumen
           </button>
         </li>
-        <li className="nav-item mb-1">
-          <button 
-            className={`nav-link text-white w-100 text-start ${activeTab === 'users' ? 'active bg-primary' : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            <i className="bi bi-people me-2"></i> Usuarios
-          </button>
-        </li>
-        <li className="nav-item mb-1">
-          <button 
-            className={`nav-link text-white w-100 text-start ${activeTab === 'vets' ? 'active bg-primary' : ''}`}
-            onClick={() => setActiveTab('vets')}
-          >
-            <i className="bi bi-hospital me-2"></i> Veterinarias
-          </button>
-        </li>
+
+        {/* ✅ SOLO ADMIN ve la gestión de Usuarios */}
+        {userRole === 'admin' && (
+            <li className="nav-item mb-1">
+            <button 
+                className={`nav-link text-white w-100 text-start ${activeTab === 'users' ? 'active bg-primary' : ''}`}
+                onClick={() => setActiveTab('users')}
+            >
+                <i className="bi bi-people me-2"></i> Usuarios
+            </button>
+            </li>
+        )}
+
+        {/* ✅ SOLO ADMIN ve la gestión de Veterinarias */}
+        {userRole === 'admin' && (
+            <li className="nav-item mb-1">
+            <button 
+                className={`nav-link text-white w-100 text-start ${activeTab === 'vets' ? 'active bg-primary' : ''}`}
+                onClick={() => setActiveTab('vets')}
+            >
+                <i className="bi bi-hospital me-2"></i> Veterinarias
+            </button>
+            </li>
+        )}
+
+        {/* TODOS ven Citas */}
         <li className="nav-item mb-1">
           <button 
             className={`nav-link text-white w-100 text-start ${activeTab === 'appointments' ? 'active bg-primary' : ''}`}
@@ -47,7 +57,6 @@ const Sidebar = ({ activeTab, setActiveTab, userRole }) => {
       
       <hr />
       <div className="text-small text-muted text-center">
-        {/* Agregamos el ? para evitar error si userRole es null al inicio */}
         Rol: {userRole?.toUpperCase() || 'USUARIO'}
       </div>
     </div>
