@@ -1,40 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'; // Importamos useMap
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// ✅ IMPORTAMOS TU ICONO PERSONALIZADO
-// Asegúrate de que la imagen esté en src/assets/iconovet.jpeg
+// ✅ 1. TU ICONO DE VETERINARIA (La Huella)
 import iconoVetImg from '../assets/iconovet.jpeg';
 
 const vetIcon = L.icon({
   iconUrl: iconoVetImg,
-  iconSize: [45, 45], // Tamaño ajustado
-  iconAnchor: [22, 45], // La punta del icono
-  popupAnchor: [0, -40], // Donde sale el globo de texto
-  className: 'rounded-circle border border-white shadow-sm' // Estilo redondo opcional
+  iconSize: [45, 45],
+  iconAnchor: [22, 45],
+  popupAnchor: [0, -40],
+  className: 'rounded-circle border border-white shadow-sm'
 });
+
+// ✅ 2. NUEVO ICONO PARA EL USUARIO (Una persona o pin azul)
+const userIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131546.png", // Icono de usuario gratis
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -40],
+});
+
+// ✅ 3. COMPONENTE AUXILIAR PARA RE-CENTRAR EL MAPA
+// Leaflet no se mueve automáticamente si cambias el estado "center", necesitamos esto:
+const RecenterMap = ({ lat, lng }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (lat && lng) {
+      map.setView([lat, lng], 14); // Zoom 14 para ver detalle cercano
+    }
+  }, [lat, lng, map]);
+  return null;
+};
 
 const AgendarCita = () => {
   const [veterinarias, setVeterinarias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [myLocation, setMyLocation] = useState(null); // Estado para ubicación del usuario
   const navigate = useNavigate();
   
-  // Coordenadas por defecto (CDMX) o usa geolocation si prefieres
+  // Coordenadas por defecto (CDMX) por si el usuario niega el permiso
   const defaultCenter = [19.4326, -99.1332];
 
   useEffect(() => {
+    // A. Obtener Ubicación del Usuario
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setMyLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => {
+          console.warn("Ubicación denegada o no disponible", error);
+        }
+      );
+    }
+
+    // B. Cargar Veterinarias
     fetchVets();
   }, []);
 
   const fetchVets = async () => {
     try {
-      // Obtenemos usuarios de la API pública
       const response = await axios.get('https://vetpet-back.onrender.com/api/users');
-      
-      // Filtramos solo veterinarias que tengan coordenadas
       const vetsConMapa = response.data.filter(u => 
         u.role === 'partner' && 
         u.partner_type === 'veterinaria' &&
@@ -49,7 +79,6 @@ const AgendarCita = () => {
   };
 
   const handleAgendar = (vet) => {
-    // Al dar clic, nos lleva al formulario pasando la veterinaria seleccionada
     navigate('/crear-cita-cliente', { state: { vet } });
   };
 
@@ -57,7 +86,11 @@ const AgendarCita = () => {
     <div className="container my-5">
       <div className="text-center mb-4">
         <h2 className="fw-bold text-primary">Encuentra tu Veterinaria</h2>
-        <p className="text-muted">Explora el mapa y agenda una cita para tu mascota.</p>
+        <p className="text-muted">
+          {myLocation 
+            ? "📍 Mostrando veterinarias cerca de tu ubicación." 
+            : "🌍 Activa tu ubicación para ver las clínicas más cercanas."}
+        </p>
       </div>
 
       {loading ? (
@@ -65,21 +98,38 @@ const AgendarCita = () => {
       ) : (
         <div className="card shadow-lg border-0 overflow-hidden">
           <div style={{ height: '550px', width: '100%' }}>
+            
             <MapContainer 
-              center={defaultCenter} 
+              center={myLocation || defaultCenter} 
               zoom={12} 
               style={{ height: '100%', width: '100%' }}
             >
+              {/* Capa del Mapa */}
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; OpenStreetMap contributors'
               />
               
+              {/* Componente invisible que mueve el mapa cuando tenemos ubicación */}
+              {myLocation && <RecenterMap lat={myLocation[0]} lng={myLocation[1]} />}
+
+              {/* 📍 MARCADOR DEL USUARIO (Tú estás aquí) */}
+              {myLocation && (
+                <Marker position={myLocation} icon={userIcon}>
+                  <Popup>
+                    <div className="text-center">
+                      <strong>¡Estás aquí!</strong> 🏠
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* 🐾 MARCADORES DE VETERINARIAS */}
               {veterinarias.map(vet => (
                 <Marker 
                   key={vet.id} 
                   position={[parseFloat(vet.latitude), parseFloat(vet.longitude)]}
-                  icon={vetIcon} // ✅ Usamos tu icono
+                  icon={vetIcon}
                 >
                   <Popup>
                     <div className="text-center" style={{ minWidth: '200px' }}>
@@ -94,11 +144,8 @@ const AgendarCita = () => {
                         {vet.phone || 'Sin teléfono'}
                       </p>
                       
-                      {/* Sección de Horarios (Estática por ahora) */}
                       <div className="alert alert-light py-1 px-2 mb-2 border text-start" style={{fontSize: '0.75rem'}}>
-                        <strong>Horario de Atención:</strong><br/>
-                        🕒 Lun - Vie: 9:00 AM - 7:00 PM<br/>
-                        🕒 Sáb: 10:00 AM - 2:00 PM
+                        <strong>Horario:</strong> 9:00 AM - 7:00 PM
                       </div>
 
                       <button 
