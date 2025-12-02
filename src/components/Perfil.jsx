@@ -26,6 +26,17 @@ function Perfil() {
     photo: null, // Archivo
     photo_url: "" // URL para previsualizar
   });
+    // Agrega estos estados junto a los otros
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedPetHistory, setSelectedPetHistory] = useState([]);
+  const [selectedPetName, setSelectedPetName] = useState("");
+
+  // Función para abrir el modal
+  const handleShowHistory = (pet) => {
+      setSelectedPetName(pet.name);
+      setSelectedPetHistory(pet.medical_history || []); // Laravel nos manda esto gracias al "with"
+      setShowHistoryModal(true);
+  };
 
   // --- ESTADOS DE ADORNO (FOTOS/CITAS) ---
   const [photos] = useState([
@@ -272,12 +283,28 @@ function Perfil() {
                       <h6 className="card-subtitle mb-2 text-muted">{pet.breed} - {pet.age} años</h6>
                       
                       <div className="small mt-3">
+                        {/* LÓGICA DE PRÓXIMA CITA */}
+                          {pet.next_appointment ? (
+                              <div className="alert alert-info py-1 px-2 mb-2" style={{ fontSize: '0.85rem' }}>
+                                  <strong>Próxima Cita:</strong><br/>
+                                  {pet.next_appointment.date} a las {pet.next_appointment.time}
+                              </div>
+                          ) : (
+                              <div className="text-muted mb-2" style={{ fontSize: '0.8rem' }}>
+                                  Sin citas pendientes
+                              </div>
+                          )}
                         <p className="mb-1"><strong>Dueño:</strong> {pet.owner_name}</p>
                         <p className="mb-1 text-danger"><strong>Alergias:</strong> {pet.allergies}</p>
                         <p className="mb-1 text-warning"><strong>Enfermedades:</strong> {pet.chronic_diseases}</p>
                         <p className="mb-1"><strong>Cirugías:</strong> {pet.surgeries}</p>
                       </div>
                     </div>
+                    <button className="btn btn-sm btn-outline-info me-1"
+                          onClick={() => handleShowHistory(pet)} // Necesitamos crear esta función
+                      >
+                          Historial
+                      </button>
                     <div className="card-footer bg-white border-top-0 d-flex justify-content-end gap-2 pb-3">
                         <button className="btn btn-sm btn-outline-warning" onClick={() => openEditPetModal(pet)}>
                             <FaEdit /> Editar
@@ -361,6 +388,45 @@ function Perfil() {
                 </div>
             </div>
         )}
+        {/* MODAL DE HISTORIAL MÉDICO */}
+{showHistoryModal && (
+    <div className="modal-overlay" style={{
+        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+        backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1050
+    }}>
+        <div className="modal-content bg-white p-4 rounded shadow-lg" style={{ width: '90%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between mb-3 border-bottom pb-2">
+                <h4 className="m-0">📋 Historial de {selectedPetName}</h4>
+                <button className="btn btn-close" onClick={() => setShowHistoryModal(false)}>X</button>
+            </div>
+
+            {selectedPetHistory.length > 0 ? (
+                <div className="list-group">
+                    {selectedPetHistory.map((record) => (
+                        <div key={record.id} className="list-group-item list-group-item-action flex-column align-items-start">
+                            <div className="d-flex w-100 justify-content-between">
+                                <h5 className="mb-1 text-primary">{record.clinic_name}</h5>
+                                <small className="text-muted">{record.visit_date}</small>
+                            </div>
+                            <p className="mb-1"><strong>Diagnóstico:</strong> {record.diagnosis}</p>
+                            {record.treatment && (
+                                <small className="text-muted"><strong>Tratamiento:</strong> {record.treatment}</small>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-4 text-muted">
+                    <p>No hay registros médicos previos.</p>
+                </div>
+            )}
+            
+            <div className="mt-3 text-end">
+                <button className="btn btn-secondary" onClick={() => setShowHistoryModal(false)}>Cerrar</button>
+            </div>
+        </div>
+    </div>
+            )}
 
       </div>
     </main>
