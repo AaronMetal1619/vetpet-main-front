@@ -131,17 +131,14 @@ const AppointmentsIndex = () => {
                 </div>
             )}
 
-            {/* --- AQUÍ IRÁ EL MODAL DEL PASO 2 Y 3 --- */}
-            {/* Por ahora solo es un placeholder para que no falle */}
-            {selectedCita && (
-                <div className="modal-overlay" style={{position: 'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', zIndex: 1050, display:'flex', justifyContent:'center', alignItems:'center'}}>
-                    <div className="bg-white p-4 rounded shadow-lg" style={{maxWidth:'600px', width:'90%'}}>
-                        <h3>Atendiendo a {selectedCita.pet.name}</h3>
-                        <p>Aquí cargaremos el componente de Historial y Finalizar Cita.</p>
-                        <button className="btn btn-secondary" onClick={() => setSelectedCita(null)}>Cerrar</button>
-                    </div>
-                </div>
-            )}
+            {/* MODAL DE ATENCIÓN VETERINARIA */}
+                {selectedCita && (
+                <VetAttentionModal 
+                    cita={selectedCita} 
+                    onClose={() => setSelectedCita(null)} 
+                    onRefresh={fetchCitas} // Esto recarga la lista cuando finalizas una cita
+                />
+                )}
         </div>
     );
 };
