@@ -15,6 +15,7 @@ import Perfil from './components/Perfil';
 import Servicios from './components/Servicios';
 import PanelSuscripciones from './components/PanelSuscripciones';
 import AgendarCita from './components/AgendarCita'; // Agendar del lado del cliente (Mapa)
+import CrearCitaCliente from './components/CrearCitaCliente'; // <--- NUEVO
 
 // Páginas del Dashboard (Privadas)
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
@@ -108,6 +109,7 @@ const AppContent = () => {
               <Route path="/suscripciones" element={<PanelSuscripciones />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/agendar" element={<AgendarCita />} />
+              <Route path="/crear-cita-cliente" element={<CrearCitaCliente />} />
 
               {/* 🛡️ RUTAS PROTEGIDAS (ADMIN / PARTNER) */}
               
