@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const CrearCitaCliente = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const vet = state?.vet; // Veterinaria seleccionada en el mapa
+    const vet = state?.vet; 
 
+    const [pets, setPets] = useState([]); // Lista de mascotas del usuario
     const [formData, setFormData] = useState({
         mascota: '',
         fecha: '',
@@ -14,7 +15,29 @@ const CrearCitaCliente = () => {
         motivo: ''
     });
 
-    // Si intenta entrar directo sin seleccionar vet
+    // Cargar mascotas al iniciar
+    useEffect(() => {
+        const fetchPets = async () => {
+            const token = localStorage.getItem('token');
+            // Si no hay token, no podemos cargar sus mascotas (quizás redirigir a login)
+            if (!token) return;
+
+            try {
+                const res = await axios.get('https://vetpet-back.onrender.com/api/pets', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPets(res.data);
+                // Si tiene mascotas, pre-seleccionar la primera
+                if (res.data.length > 0) {
+                    setFormData(prev => ({ ...prev, mascota: res.data[0].name }));
+                }
+            } catch (error) {
+                console.error("Error cargando mascotas:", error);
+            }
+        };
+        fetchPets();
+    }, []);
+
     if (!vet) {
         return (
             <div className="container my-5 text-center">
@@ -27,19 +50,18 @@ const CrearCitaCliente = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Aquí usamos la ruta pública o protegida según tu lógica.
-            // Si es pública, cualquiera puede agendar.
             await axios.post('https://vetpet-back.onrender.com/api/citas', {
-                nombre: `Cliente Web - Mascota: ${formData.mascota}`, // Formato simple
+                // Guardamos el nombre de la mascota seleccionada
+                nombre: `Cliente Web - Mascota: ${formData.mascota}`, 
                 fecha: `${formData.fecha} ${formData.hora}`,
                 motivo: `Cita con ${vet.name}: ${formData.motivo}`
             });
             
-            alert(`¡Listo! Tu cita con ${vet.name} ha sido registrada.`);
-            navigate('/'); // Volver al inicio
+            alert(`¡Listo! Cita para ${formData.mascota} registrada.`);
+            navigate('/'); 
         } catch (error) {
             console.error(error);
-            alert("Hubo un error al agendar. Intenta nuevamente.");
+            alert("Hubo un error al agendar.");
         }
     };
 
@@ -58,14 +80,41 @@ const CrearCitaCliente = () => {
                             </div>
 
                             <form onSubmit={handleSubmit}>
+                                
+                                {/* SELECCIÓN DE MASCOTA */}
                                 <div className="mb-3">
-                                    <label className="form-label">Nombre de tu Mascota</label>
-                                    <input 
-                                        type="text" className="form-control" 
-                                        value={formData.mascota}
-                                        onChange={e => setFormData({...formData, mascota: e.target.value})}
-                                        required 
-                                    />
+                                    <label className="form-label fw-bold">Selecciona tu Mascota</label>
+                                    {pets.length > 0 ? (
+                                        <select 
+                                            className="form-select"
+                                            value={formData.mascota}
+                                            onChange={e => setFormData({...formData, mascota: e.target.value})}
+                                            required
+                                        >
+                                            <option value="" disabled>Elige una mascota...</option>
+                                            {pets.map(pet => (
+                                                <option key={pet.id} value={pet.name}>
+                                                    {pet.name} ({pet.breed})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <div className="alert alert-warning p-2 small">
+                                            No tienes mascotas registradas. 
+                                            <button type="button" className="btn btn-link p-0 ms-1 align-baseline" onClick={() => navigate('/perfil')}>Registrar una aquí</button>.
+                                        </div>
+                                    )}
+                                    {/* Campo de texto libre por si quiere escribir otra cosa */}
+                                    {pets.length === 0 && (
+                                        <input 
+                                            type="text" 
+                                            className="form-control mt-2" 
+                                            placeholder="Escribe el nombre de tu mascota"
+                                            value={formData.mascota}
+                                            onChange={e => setFormData({...formData, mascota: e.target.value})}
+                                            required
+                                        />
+                                    )}
                                 </div>
 
                                 <div className="row">
@@ -94,7 +143,7 @@ const CrearCitaCliente = () => {
                                     <label className="form-label">Motivo de la visita</label>
                                     <textarea 
                                         className="form-control" rows="3"
-                                        placeholder="Ej: Vacuna anual, dolor de estómago..."
+                                        placeholder="Ej: Vacuna anual, revisión..."
                                         value={formData.motivo}
                                         onChange={e => setFormData({...formData, motivo: e.target.value})}
                                         required
