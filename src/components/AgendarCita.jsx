@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
 // ✅ 1. TU ICONO DE VETERINARIA (La Huella)
-import iconoVetImg from '../assets/iconovet.jpeg';
+import iconoVetImg from '../assets/iconovet.png';
 
 const vetIcon = L.icon({
   iconUrl: iconoVetImg,
