@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FaNotesMedical, FaCheckCircle, FaHistory } from 'react-icons/fa';
+import { FaNotesMedical, FaCheckCircle, FaHistory, FaTimes } from 'react-icons/fa';
 
 const VetAttentionModal = ({ cita, onClose, onRefresh }) => {
-    const [showForm, setShowForm] = useState(false); // Controla si se ve el formulario derecho
-    const [showHistory, setShowHistory] = useState(false); // Controla si vemos el historial
+    const [showForm, setShowForm] = useState(false); 
+    const [showHistory, setShowHistory] = useState(false); // ESTADO NUEVO
     const [formData, setFormData] = useState({ diagnosis: '', treatment: '' });
     const [saving, setSaving] = useState(false);
 
     const mascota = cita.pet;
+    // Accedemos al historial que nos manda el backend (o array vacío si no hay)
+    const historial = mascota.medical_history || [];
 
-    // Manejar el envío del formulario (PASO 3: FINALIZAR)
+    // Funciones para alternar vistas
+    const openForm = () => { setShowForm(true); setShowHistory(false); };
+    const openHistory = () => { setShowHistory(true); setShowForm(false); };
+
     const handleFinalizar = async (e) => {
         e.preventDefault();
         setSaving(true);
@@ -22,8 +27,8 @@ const VetAttentionModal = ({ cita, onClose, onRefresh }) => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             alert("¡Cita finalizada y guardada en historial!");
-            onRefresh(); // Recarga la lista de citas atrás
-            onClose();   // Cierra el modal
+            onRefresh();
+            onClose();
         } catch (error) {
             console.error(error);
             alert("Error al finalizar la cita.");
@@ -41,7 +46,7 @@ const VetAttentionModal = ({ cita, onClose, onRefresh }) => {
             <div className="bg-white rounded shadow-lg d-flex overflow-hidden" 
                  style={{ width: '90%', maxWidth: '1000px', maxHeight: '85vh' }}>
                 
-                {/* === COLUMNA IZQUIERDA: CARDEX DE LA MASCOTA === */}
+                {/* === COLUMNA IZQUIERDA: CARDEX === */}
                 <div className="p-4 overflow-auto" style={{ flex: 1, borderRight: '1px solid #eee' }}>
                     <div className="text-center mb-3">
                         <img 
@@ -63,89 +68,111 @@ const VetAttentionModal = ({ cita, onClose, onRefresh }) => {
                         </div>
                     </div>
 
-                    {/* Botones de Acción */}
                     <div className="d-grid gap-2">
-                        {/* Botón Historial: Podrías reutilizar tu lógica de historial aquí */}
-                        <button className="btn btn-outline-info" onClick={() => alert("Aquí abrirías el historial como en el perfil")}>
+                        {/* Botón Historial ACTIVO */}
+                        <button 
+                            className={`btn ${showHistory ? 'btn-info text-white' : 'btn-outline-info'}`} 
+                            onClick={openHistory}
+                        >
                             <FaHistory className="me-2"/> Ver Historial Pasado
                         </button>
 
-                        {!showForm && (
-                            <button 
-                                className="btn btn-primary btn-lg mt-2"
-                                onClick={() => setShowForm(true)}
-                            >
-                                Atender Paciente <FaNotesMedical className="ms-2"/>
-                            </button>
-                        )}
+                        <button 
+                            className={`btn ${showForm ? 'btn-primary' : 'btn-outline-primary'} mt-2`}
+                            onClick={openForm}
+                        >
+                            Atender Paciente <FaNotesMedical className="ms-2"/>
+                        </button>
                     </div>
                 </div>
 
-                {/* === COLUMNA DERECHA: FORMULARIO DE ATENCIÓN (Aparece al dar click en Atender) === */}
+                {/* === COLUMNA DERECHA: CONTENIDO DINÁMICO === */}
+                
+                {/* 1. VISTA DE FORMULARIO (ATENDER) */}
                 {showForm && (
                     <div className="p-4 bg-light d-flex flex-column" style={{ flex: 1.2, animation: 'fadeIn 0.3s' }}>
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h4 className="fw-bold text-primary mb-0">Receta o Procedimiento</h4>
+                            <h4 className="fw-bold text-primary mb-0">Nueva Consulta</h4>
                             <button className="btn-close" onClick={() => setShowForm(false)}></button>
                         </div>
-                        
                         <form onSubmit={handleFinalizar} className="d-flex flex-column flex-grow-1">
+                            {/* ... (Tus inputs de diagnóstico y tratamiento siguen igual) ... */}
                             <div className="mb-3">
-                                <label className="form-label fw-bold">Diagnóstico / Observaciones</label>
-                                <textarea 
-                                    className="form-control" 
-                                    rows="3" 
-                                    placeholder="¿Qué tiene el paciente?"
+                                <label className="form-label fw-bold">Diagnóstico</label>
+                                <textarea className="form-control" rows="3" required
                                     value={formData.diagnosis}
                                     onChange={e => setFormData({...formData, diagnosis: e.target.value})}
-                                    required
                                 ></textarea>
                             </div>
-
                             <div className="mb-3 flex-grow-1 d-flex flex-column">
-                                <label className="form-label fw-bold">Tratamiento / Receta</label>
-                                <textarea 
-                                    className="form-control flex-grow-1" 
-                                    placeholder="Medicamentos, dosis y recomendaciones..."
-                                    style={{ resize: 'none' }}
+                                <label className="form-label fw-bold">Tratamiento</label>
+                                <textarea className="form-control flex-grow-1" style={{ resize: 'none' }} required
                                     value={formData.treatment}
                                     onChange={e => setFormData({...formData, treatment: e.target.value})}
-                                    required
                                 ></textarea>
                             </div>
-
                             <div className="d-flex justify-content-end gap-2 mt-3">
                                 <button type="button" className="btn btn-secondary" onClick={onClose}>Cancelar</button>
                                 <button type="submit" className="btn btn-success px-4" disabled={saving}>
-                                    {saving ? 'Guardando...' : (
-                                        <>Finalizar Consulta <FaCheckCircle className="ms-2"/></>
-                                    )}
+                                    {saving ? 'Guardando...' : <>Finalizar <FaCheckCircle className="ms-2"/></>}
                                 </button>
                             </div>
                         </form>
                     </div>
                 )}
 
-                {/* Si NO estamos atendiendo, mostrar un placeholder o cerrar */}
-                {!showForm && (
+                {/* 2. VISTA DE HISTORIAL (VER PASADO) */}
+                {showHistory && (
+                    <div className="p-4 bg-white d-flex flex-column" style={{ flex: 1.2, animation: 'fadeIn 0.3s', overflowY: 'auto' }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4 className="fw-bold text-info mb-0">Historial Médico</h4>
+                            <button className="btn-close" onClick={() => setShowHistory(false)}></button>
+                        </div>
+
+                        {historial.length > 0 ? (
+                            <div className="d-flex flex-column gap-3">
+                                {historial.map((record) => (
+                                    <div key={record.id} className="card border-0 shadow-sm bg-light">
+                                        <div className="card-body">
+                                            <div className="d-flex justify-content-between text-muted small mb-2">
+                                                <span><i className="bi bi-calendar me-1"></i> {record.visit_date}</span>
+                                                <span className="fw-bold">{record.clinic_name}</span>
+                                            </div>
+                                            <h6 className="fw-bold text-primary mb-1">Diagnóstico:</h6>
+                                            <p className="mb-2">{record.diagnosis}</p>
+                                            
+                                            {record.treatment && (
+                                                <>
+                                                    <h6 className="fw-bold text-success mb-1">Tratamiento:</h6>
+                                                    <p className="mb-0 small text-muted fst-italic">{record.treatment}</p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-muted mt-5">
+                                <FaHistory size={40} className="mb-3 opacity-25"/>
+                                <p>No hay registros médicos anteriores.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* 3. VISTA VACÍA (PLACEHOLDER) */}
+                {!showForm && !showHistory && (
                     <div className="d-none d-md-flex align-items-center justify-content-center bg-white" style={{ flex: 1.2 }}>
                         <div className="text-center text-muted p-5">
                             <FaNotesMedical size={50} className="mb-3 text-secondary opacity-50"/>
-                            <h5>Listo para consultar</h5>
-                            <p>Revisa los datos del paciente a la izquierda y presiona <strong>"Atender"</strong> para comenzar el registro clínico.</p>
+                            <h5>Selecciona una opción</h5>
+                            <p>Puedes ver el <strong>Historial</strong> o comenzar a <strong>Atender</strong> al paciente.</p>
                             <button className="btn btn-secondary mt-3" onClick={onClose}>Cerrar Ventana</button>
                         </div>
                     </div>
                 )}
             </div>
-            
-            {/* Estilo simple para la animación */}
-            <style>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateX(20px); }
-                    to { opacity: 1; transform: translateX(0); }
-                }
-            `}</style>
+             <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }`}</style>
         </div>
     );
 };
