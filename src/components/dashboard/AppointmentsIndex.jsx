@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 // Importamos componentes de Bootstrap o iconos si los usas
 import { FaCalendarAlt, FaClock, FaEye, FaPaw } from 'react-icons/fa';
+import VetAttentionModal from '../VetAttentionModal.jsx';
 
 const AppointmentsIndex = () => {
     const [citas, setCitas] = useState([]);
