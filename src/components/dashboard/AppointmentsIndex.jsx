@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+// Importamos componentes de Bootstrap o iconos si los usas
+import { FaCalendarAlt, FaClock, FaEye, FaPaw } from 'react-icons/fa';
 
 const AppointmentsIndex = () => {
     const [citas, setCitas] = useState([]);
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+    
+    // ESTADO PARA EL PASO 2 (VISUALIZAR/ATENDER)
+    // Cuando el usuario haga click en "Visualizar", guardaremos la cita aquí para abrir el modal
+    const [selectedCita, setSelectedCita] = useState(null); 
 
     useEffect(() => {
         fetchCitas();
@@ -15,64 +19,127 @@ const AppointmentsIndex = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://vetpet-back.onrender.com/api/citas', {
+            // Usamos el NUEVO endpoint
+            const response = await axios.get('https://vetpet-back.onrender.com/api/appointments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCitas(response.data);
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Error cargando agenda:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if(window.confirm("¿Borrar esta cita?")) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`https://vetpet-back.onrender.com/api/citas/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                fetchCitas();
-            } catch (error) { alert("Error al borrar"); }
-        }
-    }
+    // Función para formatear la fecha a algo más legible (ej: Lunes 20 de marzo)
+    const formatearFecha = (fechaStr) => {
+        const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(fechaStr).toLocaleDateString('es-ES', opciones);
+    };
+
+    // Esta función activa el PASO 2 (Abrir Modal)
+    const handleVisualizar = (cita) => {
+        console.log("Abriendo cita para:", cita.pet.name);
+        setSelectedCita(cita); 
+        // Aquí luego pondremos la lógica para abrir tu Modal de Atender
+    };
 
     return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="text-muted">Agenda de Citas</h4>
-                <button className="btn btn-primary" onClick={() => navigate('/create-appointment')}>
-                    <i className="bi bi-plus-circle me-2"></i> Agendar Cita
-                </button>
+        <div className="container-fluid p-4">
+            <h2 className="fw-bold mb-4 text-secondary">AGENDA DE CITAS</h2>
+
+            {/* BARRA DE ESTADO (OPCIONAL) */}
+            <div className="alert alert-info py-2 mb-4 d-flex align-items-center">
+                <i className="bi bi-info-circle me-2"></i>
+                <span>Tienes <strong>{citas.length}</strong> citas programadas para atender.</span>
             </div>
 
             {loading ? (
-                <div className="text-center p-5"><div className="spinner-border text-primary"></div></div>
+                <div className="text-center py-5">
+                    <div className="spinner-border text-primary"></div>
+                    <p className="mt-2 text-muted">Cargando agenda...</p>
+                </div>
             ) : citas.length === 0 ? (
-                <div className="alert alert-info text-center">No hay citas programadas.</div>
+                <div className="text-center p-5 bg-light rounded shadow-sm">
+                    <h4>No hay citas programadas</h4>
+                    <p className="text-muted">Tu agenda está libre por ahora.</p>
+                </div>
             ) : (
-                <div className="row g-3">
-                    {citas.map(cita => (
-                        <div key={cita.id} className="col-md-6 col-lg-4">
-                            <div className="card h-100 shadow-sm border-0 border-start border-4 border-info">
-                                <div className="card-body">
-                                    <div className="d-flex justify-content-between align-items-start">
-                                        <h5 className="card-title fw-bold">{cita.nombre}</h5>
-                                        <button onClick={() => handleDelete(cita.id)} className="btn btn-sm text-danger p-0 border-0">
-                                            <i className="bi bi-trash"></i>
+                <div className="row g-4">
+                    {citas.map((cita) => (
+                        <div key={cita.id} className="col-md-6 col-xl-4">
+                            {/* --- TARJETA DISEÑO NUEVO --- */}
+                            <div className="card shadow border-0 overflow-hidden h-100">
+                                
+                                {/* HEADER AZUL: CLIENTE */}
+                                <div className="card-header bg-primary text-white py-3">
+                                    <h5 className="mb-0 fw-bold text-truncate">
+                                        Cita cliente {cita.pet?.user?.name || "Desconocido"}
+                                    </h5>
+                                </div>
+
+                                <div className="card-body bg-light">
+                                    {/* FECHA Y HORA DESTACADAS */}
+                                    <div className="mb-3">
+                                        <h5 className="fw-bold text-dark mb-1 text-capitalize">
+                                            {formatearFecha(cita.date)}
+                                        </h5>
+                                        <h5 className="text-secondary">
+                                            a las {cita.time} hrs
+                                        </h5>
+                                    </div>
+
+                                    {/* INFO MASCOTA */}
+                                    <div className="d-flex align-items-center mb-3 bg-white p-2 rounded border">
+                                        <div className="me-3">
+                                            {/* Foto miniatura si existe */}
+                                            {cita.pet?.photo_url ? (
+                                                <img src={cita.pet.photo_url} alt="Pet" className="rounded-circle" style={{width: '50px', height: '50px', objectFit: 'cover'}} />
+                                            ) : (
+                                                <div className="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center" style={{width: '50px', height: '50px'}}>
+                                                    <FaPaw />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h6 className="mb-0 fw-bold text-primary">{cita.pet?.name}</h6>
+                                            <small className="text-muted">{cita.pet?.breed} - {cita.pet?.age} años</small>
+                                        </div>
+                                    </div>
+
+                                    {/* MOTIVO */}
+                                    <p className="text-muted small mb-0">
+                                        <strong>Motivo:</strong> {cita.reason}
+                                    </p>
+                                </div>
+
+                                {/* FOOTER: BOTÓN VISUALIZAR */}
+                                <div className="card-footer bg-light border-0 pb-3 pt-0">
+                                    <div className="d-flex align-items-center justify-content-between">
+                                        <span className="text-muted small">¿Visualizar?</span>
+                                        <button 
+                                            className="btn btn-dark px-4"
+                                            onClick={() => handleVisualizar(cita)}
+                                        >
+                                            Visualizar
                                         </button>
                                     </div>
-                                    <h6 className="card-subtitle mb-3 text-muted">
-                                        <i className="bi bi-clock me-1"></i> {cita.fecha}
-                                    </h6>
-                                    <p className="card-text bg-light p-2 rounded">
-                                        {cita.motivo}
-                                    </p>
                                 </div>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* --- AQUÍ IRÁ EL MODAL DEL PASO 2 Y 3 --- */}
+            {/* Por ahora solo es un placeholder para que no falle */}
+            {selectedCita && (
+                <div className="modal-overlay" style={{position: 'fixed', top:0, left:0, width:'100%', height:'100%', background:'rgba(0,0,0,0.5)', zIndex: 1050, display:'flex', justifyContent:'center', alignItems:'center'}}>
+                    <div className="bg-white p-4 rounded shadow-lg" style={{maxWidth:'600px', width:'90%'}}>
+                        <h3>Atendiendo a {selectedCita.pet.name}</h3>
+                        <p>Aquí cargaremos el componente de Historial y Finalizar Cita.</p>
+                        <button className="btn btn-secondary" onClick={() => setSelectedCita(null)}>Cerrar</button>
+                    </div>
                 </div>
             )}
         </div>
