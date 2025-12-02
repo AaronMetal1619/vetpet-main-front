@@ -29,7 +29,7 @@ const CrearCitaCliente = () => {
                 setPets(res.data);
                 // Si tiene mascotas, pre-seleccionar la primera
                 if (res.data.length > 0) {
-                    setFormData(prev => ({ ...prev, pet_id: res.data[0].name }));
+                    setFormData(prev => ({ ...prev, pet_id: res.data[0].id }));
                 }
             } catch (error) {
                 console.error("Error cargando mascotas:", error);
