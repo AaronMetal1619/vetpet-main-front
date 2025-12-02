@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'; // Agregamos useMap
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Importa tu imagen (ajusta la ruta si es necesario)
-// Si no tienes la imagen aún, puedes comentar esta línea y usar un icono por defecto temporalmente
+// Configuración del icono (Si tienes tu imagen, descomenta la línea de iconoVetImg)
 // import iconoVetImg from '../../assets/iconovet.jpeg'; 
-
-// Configuración del icono
 const icon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png", // Usamos el default si no hay imagen local
-  // iconUrl: iconoVetImg, // Descomenta esto cuando tengas tu imagen
+  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  // iconUrl: iconoVetImg, 
   iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
   iconSize: [25, 41],
@@ -21,38 +18,55 @@ const icon = L.icon({
   shadowSize: [41, 41]
 });
 
+// --- COMPONENTE 1: Mover el mapa cuando el usuario escribe coordenadas ---
+const MapRecenter = ({ lat, lng }) => {
+  const map = useMap();
+  useEffect(() => {
+    // Solo movemos el mapa si las coordenadas son números válidos
+    if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+      map.setView([lat, lng], 15); // Zoom 15 para ver más cerca
+    }
+  }, [lat, lng, map]);
+  return null;
+};
+
 const VetFormPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
-    // Detectar si es edición
     const vetToEdit = location.state?.vet || null;
     const isEditing = !!vetToEdit;
 
-    // Estado inicial
     const [formData, setFormData] = useState({
         id: vetToEdit?.id || '',
         name: vetToEdit?.name || '',
         email: vetToEdit?.email || '',
-        password: '', // Contraseña vacía por seguridad
+        password: '',
         phone: vetToEdit?.phone || '',
         address: vetToEdit?.address || '',
         latitude: vetToEdit?.latitude ? parseFloat(vetToEdit.latitude) : '',
         longitude: vetToEdit?.longitude ? parseFloat(vetToEdit.longitude) : ''
     });
 
-    // Componente interno para capturar clics en el mapa
+    // --- COMPONENTE 2: Detectar clic en el mapa ---
     const LocationMarker = () => {
         useMapEvents({
             click(e) {
                 const { lat, lng } = e.latlng;
-                setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }));
+                // Actualizamos los inputs con los datos del clic (con 6 decimales)
+                setFormData(prev => ({ 
+                    ...prev, 
+                    latitude: parseFloat(lat.toFixed(6)), 
+                    longitude: parseFloat(lng.toFixed(6)) 
+                }));
             },
         });
 
-        // Solo mostramos el marcador si hay coordenadas válidas
-        return (formData.latitude && formData.longitude) ? (
-            <Marker position={[formData.latitude, formData.longitude]} icon={icon} />
+        // Mostramos el marcador si hay datos válidos
+        const lat = parseFloat(formData.latitude);
+        const lng = parseFloat(formData.longitude);
+        
+        return (!isNaN(lat) && !isNaN(lng)) ? (
+            <Marker position={[lat, lng]} icon={icon} />
         ) : null;
     };
 
@@ -64,15 +78,19 @@ const VetFormPage = () => {
         e.preventDefault();
         const token = localStorage.getItem('token');
 
+        // Validar coordenadas antes de enviar
+        if (!formData.latitude || !formData.longitude) {
+            alert("Por favor selecciona una ubicación en el mapa o escribe las coordenadas.");
+            return;
+        }
+
         try {
             if (isEditing) {
-                // EDITAR
                 await axios.put(`https://vetpet-back.onrender.com/api/users/${formData.id}`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert("Veterinaria actualizada correctamente.");
             } else {
-                // CREAR NUEVA
                 const payload = {
                     ...formData,
                     role: 'partner',
@@ -83,11 +101,10 @@ const VetFormPage = () => {
                 });
                 alert("Veterinaria creada exitosamente.");
             }
-            // Regresar al listado
             navigate('/dashboard'); 
         } catch (err) {
             console.error(err);
-            const msg = err.response?.data?.message || 'Error de conexión con el servidor';
+            const msg = err.response?.data?.message || 'Error de conexión';
             alert(`Error: ${msg}`);
         }
     };
@@ -95,7 +112,6 @@ const VetFormPage = () => {
     return (
         <div className="container my-5">
             <div className="card shadow-lg border-0">
-                {/* Header */}
                 <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
                     <h4 className="mb-0">{isEditing ? 'Editar Veterinaria' : 'Registrar Nueva Veterinaria'}</h4>
                     <button className="btn btn-light btn-sm" onClick={() => navigate('/dashboard')}>
@@ -103,66 +119,93 @@ const VetFormPage = () => {
                     </button>
                 </div>
                 
-                {/* Body */}
                 <div className="card-body p-4">
                     <form onSubmit={handleSubmit}>
                         <div className="row">
-                            {/* Columna Izquierda: Datos del Formulario */}
+                            {/* Columna Izquierda: Datos */}
                             <div className="col-lg-6 mb-4">
-                                <h5 className="text-muted mb-3 border-bottom pb-2">Información General</h5>
+                                <h5 className="text-muted mb-3 border-bottom pb-2">Datos Generales</h5>
                                 
                                 <div className="mb-3">
                                     <label className="form-label">Nombre de la Clínica</label>
                                     <input className="form-control" name="name" value={formData.name} onChange={handleChange} required placeholder="Ej. VetPet Centro" />
                                 </div>
-                                
                                 <div className="mb-3">
-                                    <label className="form-label">Correo Electrónico (Login)</label>
-                                    <input className="form-control" type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="contacto@vet.com" />
+                                    <label className="form-label">Email (Login)</label>
+                                    <input className="form-control" type="email" name="email" value={formData.email} onChange={handleChange} required />
                                 </div>
-                                
                                 <div className="mb-3">
                                     <label className="form-label">{isEditing ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}</label>
-                                    <input className="form-control" type="password" name="password" value={formData.password} onChange={handleChange} required={!isEditing} placeholder="********" />
+                                    <input className="form-control" type="password" name="password" value={formData.password} onChange={handleChange} required={!isEditing} />
                                 </div>
-                                
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">Teléfono</label>
-                                        <input className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder="555-1234" />
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">Dirección (Texto)</label>
-                                        <input className="form-control" name="address" value={formData.address} onChange={handleChange} placeholder="Av. Principal #123" />
-                                    </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Teléfono</label>
+                                    <input className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder="555-1234" />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Dirección (Texto)</label>
+                                    <input className="form-control" name="address" value={formData.address} onChange={handleChange} placeholder="Calle, Número, Colonia" />
                                 </div>
                             </div>
 
-                            {/* Columna Derecha: Mapa Interactivo */}
+                            {/* Columna Derecha: Mapa y Coordenadas */}
                             <div className="col-lg-6">
-                                <h5 className="text-muted mb-3 border-bottom pb-2">Ubicación en Mapa</h5>
-                                <div className="alert alert-info py-2 small d-flex align-items-center">
-                                    <i className="bi bi-geo-alt-fill me-2 fs-5"></i> 
-                                    <span>Haz clic en el mapa para marcar la ubicación exacta de la clínica.</span>
-                                </div>
+                                <h5 className="text-muted mb-3 border-bottom pb-2">Ubicación Geográfica</h5>
                                 
-                                <div style={{ height: '400px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc', position: 'relative', zIndex: 0 }}>
+                                {/* Inputs Manuales de Coordenadas */}
+                                <div className="row mb-3">
+                                    <div className="col-6">
+                                        <label className="form-label small fw-bold">Latitud</label>
+                                        <input 
+                                            type="number" 
+                                            step="any" 
+                                            className="form-control" 
+                                            name="latitude" 
+                                            value={formData.latitude} 
+                                            onChange={handleChange} 
+                                            placeholder="Ej: 19.4326"
+                                        />
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="form-label small fw-bold">Longitud</label>
+                                        <input 
+                                            type="number" 
+                                            step="any" 
+                                            className="form-control" 
+                                            name="longitude" 
+                                            value={formData.longitude} 
+                                            onChange={handleChange} 
+                                            placeholder="Ej: -99.1332"
+                                        />
+                                    </div>
+                                    <div className="col-12">
+                                        <small className="text-muted" style={{fontSize: '0.8rem'}}>
+                                            * Puedes escribir las coordenadas manualmente o tocar en el mapa.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div style={{ height: '350px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc', position: 'relative', zIndex: 0 }}>
                                     <MapContainer 
-                                        center={formData.latitude ? [formData.latitude, formData.longitude] : [19.4326, -99.1332]} // CDMX por defecto
+                                        // Coordenadas iniciales (CDMX) solo si no hay datos
+                                        center={[19.4326, -99.1332]} 
                                         zoom={13} 
                                         style={{ height: '100%', width: '100%' }}
                                     >
                                         <TileLayer
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            attribution='&copy; OpenStreetMap contributors'
                                         />
+                                        
+                                        {/* Escucha clics para actualizar inputs */}
                                         <LocationMarker />
+
+                                        {/* Escucha inputs para mover el mapa */}
+                                        <MapRecenter 
+                                            lat={parseFloat(formData.latitude)} 
+                                            lng={parseFloat(formData.longitude)} 
+                                        />
                                     </MapContainer>
-                                </div>
-                                
-                                <div className="d-flex justify-content-between mt-2 text-muted small bg-light p-2 rounded border">
-                                    <span><strong>Latitud:</strong> {formData.latitude ? parseFloat(formData.latitude).toFixed(6) : '---'}</span>
-                                    <span><strong>Longitud:</strong> {formData.longitude ? parseFloat(formData.longitude).toFixed(6) : '---'}</span>
                                 </div>
                             </div>
                         </div>
