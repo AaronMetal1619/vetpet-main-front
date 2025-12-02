@@ -9,15 +9,16 @@ const ChatbotWidget = () => {
   const [userLocation, setUserLocation] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const storedUser = JSON.parse(localStorage.getItem("user")) 
-                  || JSON.parse(localStorage.getItem("userLocal"));
+  const storedUser =
+    JSON.parse(localStorage.getItem("user")) ||
+    JSON.parse(localStorage.getItem("userLocal"));
 
   const role = storedUser?.role;
   const subscriptionActive = storedUser?.subscription_active;
 
   const canViewChatbot =
     role === "admin" ||
-    role === "partner" || 
+    role === "partner" ||
     role === "veterinaria" ||
     (role === "user" && subscriptionActive === true);
 
@@ -27,19 +28,19 @@ const ChatbotWidget = () => {
         (pos) => {
           setUserLocation({
             lat: pos.coords.latitude,
-            lng: pos.coords.longitude
+            lng: pos.coords.longitude,
           });
         },
-        (err) => console.warn("No se pudo obtener la ubicación:", err)
+        () => {
+          console.warn("No se pudo obtener la ubicación");
+        }
       );
     }
   }, []);
 
-  if (!canViewChatbot) return null;
-
   useEffect(() => {
     if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen]);
 
@@ -49,8 +50,8 @@ const ChatbotWidget = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const userMessage = input;
-    setMessages(prev => [...prev, { from: "user", text: userMessage }]);
+    const userText = input;
+    setMessages((prev) => [...prev, { from: "user", text: userText }]);
     setInput("");
 
     try {
@@ -59,38 +60,43 @@ const ChatbotWidget = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: getUserId(),
-          text: userMessage,
-          location: userLocation
-        })
+          text: userText,
+          location: userLocation,
+        }),
       });
+
+      // 🔥 Blindaje total contra respuestas vacías
+      const raw = await res.text();
 
       let data = {};
       try {
-        data = await res.json();
-      } catch {
-        console.warn("Respuesta vacía desde n8n.");
+        data = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.warn("No se pudo parsear JSON:", e);
       }
 
-      const botAnswer =
+      const botMessage =
         data.answer ||
         data.message ||
         data.output ||
-        "Lo recibí, pero ¿puedes repetirlo?";
+        raw ||
+        "No pude entender la respuesta del servidor.";
 
-      setMessages(prev => [...prev, { from: "bot", text: botAnswer }]);
+      setMessages((prev) => [...prev, { from: "bot", text: botMessage }]);
 
-    } catch (err) {
-      console.error(err);
-      setMessages(prev => [
+    } catch (error) {
+      console.error(error);
+      setMessages((prev) => [
         ...prev,
-        { from: "bot", text: "⚠️ Error al conectar con el asistente." }
+        { from: "bot", text: "⚠️ Error al conectar con el asistente." },
       ]);
     }
   };
 
+  if (!canViewChatbot) return null;
+
   return (
-    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
-      
+    <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 9999 }}>
       {isOpen && (
         <div
           style={{
@@ -98,23 +104,42 @@ const ChatbotWidget = () => {
             height: 500,
             marginBottom: 15,
             borderRadius: 12,
-            boxShadow: '0 5px 20px rgba(0,0,0,0.2)',
-            border: '1px solid #ddd',
-            backgroundColor: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
+            boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+            border: "1px solid #ddd",
+            backgroundColor: "white",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
           }}
         >
-
-          <div style={{ background: "#007bff", color: "white", padding: "12px", display: "flex", justifyContent: "space-between" }}>
-            <span><strong>🤖 Asistente VetPet</strong></span>
-            <button onClick={() => setIsOpen(false)} style={{ background: "none", border: "none", color: "white" }}>✖</button>
+          <div
+            style={{
+              background: "#007bff",
+              color: "white",
+              padding: 12,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <strong>🤖 Asistente VetPet</strong>
+            <button
+              onClick={() => setIsOpen(false)}
+              style={{ background: "none", border: "none", color: "white" }}
+            >
+              ✖
+            </button>
           </div>
 
           <div style={{ flex: 1, padding: 15, overflowY: "auto", background: "#f8f9fa" }}>
             {messages.map((msg, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: msg.from === "bot" ? "flex-start" : "flex-end", marginBottom: 10 }}>
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: msg.from === "bot" ? "flex-start" : "flex-end",
+                  marginBottom: 10,
+                }}
+              >
                 <div
                   style={{
                     padding: "10px 14px",
@@ -122,7 +147,7 @@ const ChatbotWidget = () => {
                     maxWidth: "80%",
                     backgroundColor: msg.from === "bot" ? "#e9ecef" : "#007bff",
                     color: msg.from === "bot" ? "#333" : "white",
-                    whiteSpace: "pre-line"
+                    whiteSpace: "pre-line",
                   }}
                 >
                   {msg.text}
@@ -138,11 +163,28 @@ const ChatbotWidget = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Escribe..."
-              style={{ flex: 1, padding: "8px 15px", borderRadius: 20, border: "1px solid #ddd" }}
+              style={{
+                flex: 1,
+                padding: "8px 15px",
+                borderRadius: 20,
+                border: "1px solid #ddd",
+              }}
             />
-            <button type="submit" style={{ marginLeft: 8, width: 40, height: 40, borderRadius: "50%", border: "none", background: "#007bff", color: "white" }}>➤</button>
+            <button
+              type="submit"
+              style={{
+                marginLeft: 8,
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: "none",
+                background: "#007bff",
+                color: "white",
+              }}
+            >
+              ➤
+            </button>
           </form>
-
         </div>
       )}
 
@@ -157,7 +199,7 @@ const ChatbotWidget = () => {
           border: "none",
           boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
           cursor: "pointer",
-          fontSize: "1.5rem"
+          fontSize: "1.5rem",
         }}
       >
         {isOpen ? "⬇" : "💬"}
