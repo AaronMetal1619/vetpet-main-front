@@ -9,7 +9,7 @@ const CrearCitaCliente = () => {
 
     const [pets, setPets] = useState([]); // Lista de mascotas del usuario
     const [formData, setFormData] = useState({
-        mascota: '',
+        pet_id: '',
         fecha: '',
         hora: '',
         motivo: ''
@@ -29,7 +29,7 @@ const CrearCitaCliente = () => {
                 setPets(res.data);
                 // Si tiene mascotas, pre-seleccionar la primera
                 if (res.data.length > 0) {
-                    setFormData(prev => ({ ...prev, mascota: res.data[0].name }));
+                    setFormData(prev => ({ ...prev, pet_id: res.data[0].name }));
                 }
             } catch (error) {
                 console.error("Error cargando mascotas:", error);
@@ -48,20 +48,33 @@ const CrearCitaCliente = () => {
     }
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+       e.preventDefault();
+        
+        // Validación básica
+        if(!formData.pet_id) {
+            alert("Por favor selecciona una mascota");
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
         try {
-            await axios.post('https://vetpet-back.onrender.com/api/citas', {
-                // Guardamos el nombre de la mascota seleccionada
-                nombre: `Cliente Web - Mascota: ${formData.mascota}`, 
-                fecha: `${formData.fecha} ${formData.hora}`,
-                motivo: `Cita con ${vet.name}: ${formData.motivo}`
+            // CAMBIO: Apuntamos a un nuevo endpoint en TU controlador
+            await axios.post('https://vetpet-back.onrender.com/api/appointments', {
+                pet_id: formData.pet_id,
+                date: formData.fecha,
+                time: formData.hora,
+                reason: formData.motivo,
+                status: 'pending' // Estado por defecto
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
             
-            alert(`¡Listo! Cita para ${formData.mascota} registrada.`);
-            navigate('/'); 
+            alert(`¡Cita agendada con éxito!`);
+            navigate('/perfil'); // Redirigir al perfil para ver la cita en el Cardex
         } catch (error) {
             console.error(error);
-            alert("Hubo un error al agendar.");
+            alert("Error al agendar: " + (error.response?.data?.message || "Intenta de nuevo"));
         }
     };
 
@@ -87,13 +100,13 @@ const CrearCitaCliente = () => {
                                     {pets.length > 0 ? (
                                         <select 
                                             className="form-select"
-                                            value={formData.mascota}
-                                            onChange={e => setFormData({...formData, mascota: e.target.value})}
+                                            value={formData.pet_id}
+                                            onChange={e => setFormData({...formData, pet_id: e.target.value})}
                                             required
                                         >
                                             <option value="" disabled>Elige una mascota...</option>
                                             {pets.map(pet => (
-                                                <option key={pet.id} value={pet.name}>
+                                                <option key={pet.id} value={pet.id}>
                                                     {pet.name} ({pet.breed})
                                                 </option>
                                             ))}
@@ -110,8 +123,8 @@ const CrearCitaCliente = () => {
                                             type="text" 
                                             className="form-control mt-2" 
                                             placeholder="Escribe el nombre de tu mascota"
-                                            value={formData.mascota}
-                                            onChange={e => setFormData({...formData, mascota: e.target.value})}
+                                            value={formData.pet_id}
+                                            onChange={e => setFormData({...formData, pet_id: e.target.value})}
                                             required
                                         />
                                     )}

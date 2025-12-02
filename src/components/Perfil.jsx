@@ -300,18 +300,33 @@ function Perfil() {
                         <p className="mb-1"><strong>Cirugías:</strong> {pet.surgeries}</p>
                       </div>
                     </div>
-                    <button className="btn btn-sm btn-outline-info me-1"
-                          onClick={() => handleShowHistory(pet)} // Necesitamos crear esta función
-                      >
-                          Historial
-                      </button>
-                    <div className="card-footer bg-white border-top-0 d-flex justify-content-end gap-2 pb-3">
-                        <button className="btn btn-sm btn-outline-warning" onClick={() => openEditPetModal(pet)}>
-                            <FaEdit /> Editar
+                    <div className="card-footer bg-white border-top-0 pt-0">
+    <div className="d-flex justify-content-between gap-2">
+            {/* Botón Historial (Azul Informativo) */}
+            <button 
+                className="btn btn-sm btn-outline-info flex-grow-1 d-flex align-items-center justify-content-center"
+                onClick={() => handleShowHistory(pet)}
+            >
+                <span className="me-1">📋</span> Historial
+            </button>
+
+            {/* Botón Editar (Amarillo) */}
+            <button 
+                className="btn btn-sm btn-outline-warning flex-grow-1 d-flex align-items-center justify-content-center" 
+                onClick={() => openEditPetModal(pet)}
+            >
+                <FaEdit className="me-1" /> Editar
+            </button>
+
+            {/* Botón Eliminar (Rojo) */}
+            <button 
+                className="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center" 
+                onClick={() => handleDeletePet(pet.id)}
+                title="Eliminar"
+                         >
+                        <FaTrash />
                         </button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePet(pet.id)}>
-                            <FaTrash />
-                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
