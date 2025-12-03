@@ -8,17 +8,17 @@ const CrearCitaCliente = () => {
     const vet = state?.vet; 
 
     const [pets, setPets] = useState([]);
-    const [slots, setSlots] = useState([]); // AQUI GUARDAMOS LAS HORAS DISPONIBLES
+    const [slots, setSlots] = useState([]); 
     const [loadingSlots, setLoadingSlots] = useState(false);
 
     const [formData, setFormData] = useState({
         pet_id: '',
         fecha: '',
-        hora: '', // Esto ya no lo escribe el usuario, lo selecciona
+        hora: '',
         motivo: ''
     });
 
-    // 1. Cargar Mascotas (Igual que antes)
+    // 1. Cargar Mascotas
     useEffect(() => {
         const fetchPets = async () => {
             const token = localStorage.getItem('token');
@@ -43,15 +43,24 @@ const CrearCitaCliente = () => {
 
     const fetchSlots = async () => {
         setLoadingSlots(true);
-        setFormData(prev => ({ ...prev, hora: '' })); // Reiniciar hora si cambia fecha
+        setFormData(prev => ({ ...prev, hora: '' })); 
+        
         try {
-            // Asumiendo que creaste la ruta en api.php
+            // --- AQUÍ ESTABA EL ERROR: FALTABA EL TOKEN ---
+            const token = localStorage.getItem('token');
+            
             const res = await axios.get(`https://vetpet-back.onrender.com/api/available-slots`, {
-                params: { vet_id: vet.id, date: formData.fecha }
+                params: { vet_id: vet.id, date: formData.fecha },
+                headers: { Authorization: `Bearer ${token}` } // <--- AGREGADO
             });
-            setSlots(res.data); // ['09:00:00', '10:00:00', ...]
+            
+            setSlots(res.data); 
         } catch (error) {
             console.error("Error cargando horarios", error);
+            if (error.response?.status === 401) {
+                alert("Tu sesión expiró. Por favor inicia sesión de nuevo.");
+                navigate('/login');
+            }
         } finally {
             setLoadingSlots(false);
         }
@@ -65,7 +74,7 @@ const CrearCitaCliente = () => {
         try {
             await axios.post('https://vetpet-back.onrender.com/api/appointments', {
                 pet_id: formData.pet_id,
-                vet_id: vet.id, // IMPORTANTE: ENVIAR EL ID DEL VETERINARIO
+                vet_id: vet.id,
                 date: formData.fecha,
                 time: formData.hora,
                 reason: formData.motivo,
@@ -79,7 +88,7 @@ const CrearCitaCliente = () => {
         }
     };
 
-    if (!vet) return <div>Cargando...</div>;
+    if (!vet) return <div className="text-center mt-5">Cargando...</div>;
 
     return (
         <div className="container my-5">
@@ -90,7 +99,7 @@ const CrearCitaCliente = () => {
                 <div className="card-body p-4">
                     <form onSubmit={handleSubmit}>
                         
-                        {/* SELECCIÓN DE MASCOTA (Igual que antes) */}
+                        {/* SELECCIÓN DE MASCOTA */}
                         <div className="mb-3">
                             <label className="form-label fw-bold">Mascota</label>
                             <select className="form-select" value={formData.pet_id} onChange={e => setFormData({...formData, pet_id: e.target.value})}>
@@ -111,7 +120,7 @@ const CrearCitaCliente = () => {
                             />
                         </div>
 
-                        {/* GRID DE HORARIOS (LA MAGIA TIPO INE) */}
+                        {/* GRID DE HORARIOS (TIPO INE) */}
                         <div className="mb-4">
                             <label className="form-label fw-bold">Horarios Disponibles</label>
                             
@@ -129,7 +138,7 @@ const CrearCitaCliente = () => {
                                             onClick={() => setFormData({...formData, hora: time})}
                                             style={{ width: '80px' }}
                                         >
-                                            {time.slice(0,5)} {/* Muestra 09:00 en vez de 09:00:00 */}
+                                            {time.slice(0,5)}
                                         </button>
                                     )) : (
                                         <div className="alert alert-warning w-100">No hay horarios disponibles para este día.</div>
