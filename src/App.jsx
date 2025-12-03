@@ -158,21 +158,51 @@ const AppContent = () => {
         </>
       )}
 
-      {/* Modales Globales */}
+     {/* Modales Globales */}
       {showContactModal && (
-        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: 'blur(3px)' }}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Contáctanos</h5>
-                <button type="button" className="btn-close" onClick={() => setShowContactModal(false)}></button>
+            <div className="modal-content shadow-lg border-0">
+              
+              {/* Encabezado Rojo para denotar Emergencia/Importancia */}
+              <div className="modal-header bg-danger text-white">
+                <h5 className="modal-title fw-bold">
+                  <i className="bi bi-shield-fill-exclamation me-2"></i>
+                  Zona de Emergencias
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowContactModal(false)}></button>
               </div>
-              <div className="modal-body">
-                <p>📧 Email: contacto@agendavet.com</p>
-                <p>📞 Tel: +52 555 123 4567</p>
+
+              <div className="modal-body text-center p-4">
+                {/* Icono grande de Android */}
+                <div className="mb-3">
+                   <i className="bi bi-android2 text-success" style={{fontSize: '4.5rem'}}></i>
+                </div>
+                
+                <h4 className="fw-bold mb-2">Descarga nuestra App Móvil</h4>
+                <p className="text-muted mb-4">
+                  Instala nuestra aplicación oficial para acceder al <strong>Botón de Pánico Veterinario</strong> y geolocalización en tiempo real.
+                </p>
+
+                {/* Botón de Descarga Real */}
+                <div className="d-grid gap-2">
+                  <a 
+                    href="/vetpet-app.apk" /* ⚠️ Asegúrate que el archivo esté en la carpeta 'public' */
+                    download="VetPet_Emergencia.apk"
+                    className="btn btn-dark btn-lg"
+                  >
+                    <i className="bi bi-cloud-arrow-down-fill me-2"></i> 
+                    Descargar APK
+                  </a>
+                </div>
+
+                <small className="d-block mt-3 text-muted" style={{fontSize: '0.75rem'}}>
+                  * Requiere habilitar "Instalar de fuentes desconocidas" en tu Android.
+                </small>
               </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowContactModal(false)}>Cerrar</button>
+
+              <div className="modal-footer bg-light">
+                <button className="btn btn-outline-secondary w-100" onClick={() => setShowContactModal(false)}>Cerrar</button>
               </div>
             </div>
           </div>
