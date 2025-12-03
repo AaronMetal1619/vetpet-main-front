@@ -7,169 +7,147 @@ const CrearCitaCliente = () => {
     const navigate = useNavigate();
     const vet = state?.vet; 
 
-    const [pets, setPets] = useState([]); // Lista de mascotas del usuario
+    const [pets, setPets] = useState([]);
+    const [slots, setSlots] = useState([]); // AQUI GUARDAMOS LAS HORAS DISPONIBLES
+    const [loadingSlots, setLoadingSlots] = useState(false);
+
     const [formData, setFormData] = useState({
         pet_id: '',
         fecha: '',
-        hora: '',
+        hora: '', // Esto ya no lo escribe el usuario, lo selecciona
         motivo: ''
     });
 
-    // Cargar mascotas al iniciar
+    // 1. Cargar Mascotas (Igual que antes)
     useEffect(() => {
         const fetchPets = async () => {
             const token = localStorage.getItem('token');
-            // Si no hay token, no podemos cargar sus mascotas (quizás redirigir a login)
             if (!token) return;
-
             try {
                 const res = await axios.get('https://vetpet-back.onrender.com/api/pets', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPets(res.data);
-                // Si tiene mascotas, pre-seleccionar la primera
-                if (res.data.length > 0) {
-                    setFormData(prev => ({ ...prev, pet_id: res.data[0].id }));
-                }
-            } catch (error) {
-                console.error("Error cargando mascotas:", error);
-            }
+                if (res.data.length > 0) setFormData(prev => ({ ...prev, pet_id: res.data[0].id }));
+            } catch (error) { console.error(error); }
         };
         fetchPets();
     }, []);
 
-    if (!vet) {
-        return (
-            <div className="container my-5 text-center">
-                <h3>⚠️ Debes seleccionar una veterinaria primero.</h3>
-                <button className="btn btn-primary mt-3" onClick={() => navigate('/agendar')}>Ir al Mapa</button>
-            </div>
-        );
-    }
-
-    const handleSubmit = async (e) => {
-       e.preventDefault();
-        
-        // Validación básica
-        if(!formData.pet_id) {
-            alert("Por favor selecciona una mascota");
-            return;
+    // 2. Cargar Horarios cuando cambia la FECHA
+    useEffect(() => {
+        if (formData.fecha && vet) {
+            fetchSlots();
         }
+    }, [formData.fecha]);
 
-        const token = localStorage.getItem('token');
-
+    const fetchSlots = async () => {
+        setLoadingSlots(true);
+        setFormData(prev => ({ ...prev, hora: '' })); // Reiniciar hora si cambia fecha
         try {
-            // CAMBIO: Apuntamos a un nuevo endpoint en TU controlador
-            await axios.post('https://vetpet-back.onrender.com/api/appointments', {
-                pet_id: formData.pet_id,
-                date: formData.fecha,
-                time: formData.hora,
-                reason: formData.motivo,
-                status: 'pending' // Estado por defecto
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
+            // Asumiendo que creaste la ruta en api.php
+            const res = await axios.get(`https://vetpet-back.onrender.com/api/available-slots`, {
+                params: { vet_id: vet.id, date: formData.fecha }
             });
-            
-            alert(`¡Cita agendada con éxito!`);
-            navigate('/perfil'); // Redirigir al perfil para ver la cita en el Cardex
+            setSlots(res.data); // ['09:00:00', '10:00:00', ...]
         } catch (error) {
-            console.error(error);
-            alert("Error al agendar: " + (error.response?.data?.message || "Intenta de nuevo"));
+            console.error("Error cargando horarios", error);
+        } finally {
+            setLoadingSlots(false);
         }
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if(!formData.hora) return alert("Selecciona un horario");
+
+        const token = localStorage.getItem('token');
+        try {
+            await axios.post('https://vetpet-back.onrender.com/api/appointments', {
+                pet_id: formData.pet_id,
+                vet_id: vet.id, // IMPORTANTE: ENVIAR EL ID DEL VETERINARIO
+                date: formData.fecha,
+                time: formData.hora,
+                reason: formData.motivo,
+                status: 'pending'
+            }, { headers: { Authorization: `Bearer ${token}` } });
+            
+            alert(`¡Cita agendada!`);
+            navigate('/perfil');
+        } catch (error) {
+            alert("Error al agendar");
+        }
+    };
+
+    if (!vet) return <div>Cargando...</div>;
+
     return (
         <div className="container my-5">
-            <div className="row justify-content-center">
-                <div className="col-md-8 col-lg-6">
-                    <div className="card shadow-lg border-0">
-                        <div className="card-header bg-success text-white py-3">
-                            <h4 className="mb-0">Agendar con {vet.name}</h4>
+            <div className="card shadow-lg border-0 mx-auto" style={{maxWidth: '600px'}}>
+                <div className="card-header bg-success text-white">
+                    <h4 className="mb-0">Agendar con {vet.name}</h4>
+                </div>
+                <div className="card-body p-4">
+                    <form onSubmit={handleSubmit}>
+                        
+                        {/* SELECCIÓN DE MASCOTA (Igual que antes) */}
+                        <div className="mb-3">
+                            <label className="form-label fw-bold">Mascota</label>
+                            <select className="form-select" value={formData.pet_id} onChange={e => setFormData({...formData, pet_id: e.target.value})}>
+                                {pets.map(pet => <option key={pet.id} value={pet.id}>{pet.name}</option>)}
+                            </select>
                         </div>
-                        <div className="card-body p-4">
-                            <div className="alert alert-info mb-4">
-                                <i className="bi bi-geo-alt-fill me-2"></i>
-                                <strong>Ubicación:</strong> {vet.address || 'Sin dirección'}
-                            </div>
 
-                            <form onSubmit={handleSubmit}>
-                                
-                                {/* SELECCIÓN DE MASCOTA */}
-                                <div className="mb-3">
-                                    <label className="form-label fw-bold">Selecciona tu Mascota</label>
-                                    {pets.length > 0 ? (
-                                        <select 
-                                            className="form-select"
-                                            value={formData.pet_id}
-                                            onChange={e => setFormData({...formData, pet_id: e.target.value})}
-                                            required
+                        {/* SELECCIÓN DE FECHA */}
+                        <div className="mb-3">
+                            <label className="form-label fw-bold">Fecha de la Cita</label>
+                            <input 
+                                type="date" 
+                                className="form-control"
+                                min={new Date().toISOString().split('T')[0]}
+                                value={formData.fecha}
+                                onChange={e => setFormData({...formData, fecha: e.target.value})}
+                                required
+                            />
+                        </div>
+
+                        {/* GRID DE HORARIOS (LA MAGIA TIPO INE) */}
+                        <div className="mb-4">
+                            <label className="form-label fw-bold">Horarios Disponibles</label>
+                            
+                            {!formData.fecha && <div className="text-muted small">Selecciona una fecha primero.</div>}
+                            
+                            {loadingSlots && <div className="spinner-border spinner-border-sm text-success ms-2"></div>}
+                            
+                            {formData.fecha && !loadingSlots && (
+                                <div className="d-flex flex-wrap gap-2">
+                                    {slots.length > 0 ? slots.map((time) => (
+                                        <button
+                                            key={time}
+                                            type="button"
+                                            className={`btn ${formData.hora === time ? 'btn-success' : 'btn-outline-success'}`}
+                                            onClick={() => setFormData({...formData, hora: time})}
+                                            style={{ width: '80px' }}
                                         >
-                                            <option value="" disabled>Elige una mascota...</option>
-                                            {pets.map(pet => (
-                                                <option key={pet.id} value={pet.id}>
-                                                    {pet.name} ({pet.breed})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <div className="alert alert-warning p-2 small">
-                                            No tienes mascotas registradas. 
-                                            <button type="button" className="btn btn-link p-0 ms-1 align-baseline" onClick={() => navigate('/perfil')}>Registrar una aquí</button>.
-                                        </div>
-                                    )}
-                                    {/* Campo de texto libre por si quiere escribir otra cosa */}
-                                    {pets.length === 0 && (
-                                        <input 
-                                            type="text" 
-                                            className="form-control mt-2" 
-                                            placeholder="Escribe el nombre de tu mascota"
-                                            value={formData.pet_id}
-                                            onChange={e => setFormData({...formData, pet_id: e.target.value})}
-                                            required
-                                        />
+                                            {time.slice(0,5)} {/* Muestra 09:00 en vez de 09:00:00 */}
+                                        </button>
+                                    )) : (
+                                        <div className="alert alert-warning w-100">No hay horarios disponibles para este día.</div>
                                     )}
                                 </div>
-
-                                <div className="row">
-                                    <div className="col-6 mb-3">
-                                        <label className="form-label">Fecha</label>
-                                        <input 
-                                            type="date" className="form-control" 
-                                            min={new Date().toISOString().split('T')[0]}
-                                            value={formData.fecha}
-                                            onChange={e => setFormData({...formData, fecha: e.target.value})}
-                                            required 
-                                        />
-                                    </div>
-                                    <div className="col-6 mb-3">
-                                        <label className="form-label">Hora</label>
-                                        <input 
-                                            type="time" className="form-control" 
-                                            value={formData.hora}
-                                            onChange={e => setFormData({...formData, hora: e.target.value})}
-                                            required 
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="form-label">Motivo de la visita</label>
-                                    <textarea 
-                                        className="form-control" rows="3"
-                                        placeholder="Ej: Vacuna anual, revisión..."
-                                        value={formData.motivo}
-                                        onChange={e => setFormData({...formData, motivo: e.target.value})}
-                                        required
-                                    ></textarea>
-                                </div>
-
-                                <div className="d-grid gap-2">
-                                    <button type="submit" className="btn btn-success btn-lg">Confirmar Cita</button>
-                                    <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/agendar')}>Cancelar</button>
-                                </div>
-                            </form>
+                            )}
                         </div>
-                    </div>
+
+                        {/* MOTIVO */}
+                        <div className="mb-4">
+                            <label className="form-label fw-bold">Motivo</label>
+                            <textarea className="form-control" rows="2" required
+                                value={formData.motivo} onChange={e => setFormData({...formData, motivo: e.target.value})}
+                            ></textarea>
+                        </div>
+
+                        <button type="submit" className="btn btn-dark w-100 py-2">Confirmar Cita</button>
+                    </form>
                 </div>
             </div>
         </div>
