@@ -2,17 +2,17 @@ import React from 'react';
 
 const Sidebar = ({ activeTab, setActiveTab, userRole }) => {
   return (
-    <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" 
-         style={{ width: '250px', height: '100%', overflowY: 'auto' }}>
-      
+    <div className="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark"
+      style={{ width: '250px', height: '100%', overflowY: 'auto' }}>
+
       <div className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <span className="fs-5 fw-bold">Panel de Control</span>
       </div>
       <hr />
-      
+
       <ul className="nav nav-pills flex-column mb-auto">
         <li className="nav-item mb-1">
-          <button 
+          <button
             className={`nav-link text-white w-100 text-start ${activeTab === 'overview' ? 'active bg-primary' : ''}`}
             onClick={() => setActiveTab('overview')}
           >
@@ -22,39 +22,49 @@ const Sidebar = ({ activeTab, setActiveTab, userRole }) => {
 
         {/* ✅ SOLO ADMIN ve la gestión de Usuarios */}
         {userRole === 'admin' && (
-            <li className="nav-item mb-1">
-            <button 
-                className={`nav-link text-white w-100 text-start ${activeTab === 'users' ? 'active bg-primary' : ''}`}
-                onClick={() => setActiveTab('users')}
+          <li className="nav-item mb-1">
+            <button
+              className={`nav-link text-white w-100 text-start ${activeTab === 'users' ? 'active bg-primary' : ''}`}
+              onClick={() => setActiveTab('users')}
             >
-                <i className="bi bi-people me-2"></i> Usuarios
+              <i className="bi bi-people me-2"></i> Usuarios
             </button>
-            </li>
+          </li>
         )}
 
         {/* ✅ SOLO ADMIN ve la gestión de Veterinarias */}
         {userRole === 'admin' && (
-            <li className="nav-item mb-1">
-            <button 
-                className={`nav-link text-white w-100 text-start ${activeTab === 'vets' ? 'active bg-primary' : ''}`}
-                onClick={() => setActiveTab('vets')}
+          <li className="nav-item mb-1">
+            <button
+              className={`nav-link text-white w-100 text-start ${activeTab === 'vets' ? 'active bg-primary' : ''}`}
+              onClick={() => setActiveTab('vets')}
             >
-                <i className="bi bi-hospital me-2"></i> Veterinarias
+              <i className="bi bi-hospital me-2"></i> Veterinarias
             </button>
-            </li>
+          </li>
         )}
 
         {/* TODOS ven Citas */}
         <li className="nav-item mb-1">
-          <button 
+          <button
             className={`nav-link text-white w-100 text-start ${activeTab === 'appointments' ? 'active bg-primary' : ''}`}
             onClick={() => setActiveTab('appointments')}
           >
             <i className="bi bi-calendar-check me-2"></i> Citas
           </button>
         </li>
+
+        {/* ✅ NUEVO: Botón para el Dashboard Financiero */}
+        <li className="nav-item mb-1">
+          <button
+            className={`nav-link text-white w-100 text-start ${activeTab === 'superset' ? 'active bg-primary' : ''}`}
+            onClick={() => setActiveTab('superset')}
+          >
+            <i className="bi bi-graph-up-arrow me-2"></i> Métricas Financieras
+          </button>
+        </li>
       </ul>
-      
+
       <hr />
       <div className="text-small text-muted text-center">
         Rol: {userRole?.toUpperCase() || 'USUARIO'}

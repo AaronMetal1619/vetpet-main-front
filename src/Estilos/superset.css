@@ -1,0 +1,34 @@
+/* src/Estilos/superset.css */
+
+.dashboard-wrapper {
+    /* Ya no usamos padding aquí porque el AdminDashboard ya tiene padding (p-4) */
+    /* background-color: #f4f4f4;  <-- Ya lo maneja el padre */
+
+    height: 100%;
+    /* IMPORTANTE: Ocupa el 100% del espacio que AdminDashboard le dé */
+    min-height: 600px;
+    /* Altura mínima para que no se vea aplastado */
+    display: flex;
+    flex-direction: column;
+}
+
+.superset-container {
+    width: 100%;
+    flex-grow: 1;
+    height: 100%;
+    /* Forzamos altura */
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+    /* Para posicionar bien el iframe */
+}
+
+.superset-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    /* Elimina espacios fantasma debajo de iframes */
+}
