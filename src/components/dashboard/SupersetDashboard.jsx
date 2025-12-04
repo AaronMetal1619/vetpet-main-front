@@ -10,7 +10,7 @@ const SupersetDashboard = () => {
             try {
                 // PASO 1: Pedimos TODO al backend (Token, URL y ID)
                 // Usamos una ruta relativa o la variable de entorno de tu API
-                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+                const apiUrl = import.meta.env.VITE_API_URL || "https://4169f60d.us1a.app.preset.io";
 
                 console.log("🔄 Contactando al Backend...");
                 const response = await axios.get(`${apiUrl}/api/preset-token`);
