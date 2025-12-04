@@ -8,26 +8,29 @@ const SupersetDashboard = () => {
     useEffect(() => {
         const mountDashboard = async () => {
             try {
-                // 🚨 CAMBIO DE SEGURIDAD:
-                // Antes: || "http://localhost:8000"
-                // Ahora: || "https://vetpet-back.onrender.com"
-                // Si no encuentra la variable de entorno, asume que estamos en Producción.
-
                 const apiUrl = import.meta.env.VITE_API_URL || "https://vetpet-back.onrender.com";
+                const token = localStorage.getItem('token'); // 1. OBTENEMOS EL TOKEN
+
+                if (!token) {
+                    console.error("❌ No hay token de sesión. No se puede cargar el dashboard.");
+                    return;
+                }
 
                 console.log(`🔄 Contactando al Backend en: ${apiUrl}`);
 
-                // Hacemos la petición
-                const response = await axios.get(`${apiUrl}/api/preset-token`);
+                // 2. ENVIAMOS EL TOKEN EN LOS HEADERS (SOLUCIONA EL ERROR 401)
+                const response = await axios.get(`${apiUrl}/api/preset-token`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-                const { token, supersetDomain, dashboardId } = response.data;
+                const { token: guestToken, supersetDomain, dashboardId } = response.data;
                 console.log("✅ Datos recibidos. Conectando a:", supersetDomain);
 
                 await embedDashboard({
                     id: dashboardId,
                     supersetDomain: supersetDomain,
                     mountPoint: document.getElementById("dashboard-container"),
-                    fetchGuestToken: () => Promise.resolve(token),
+                    fetchGuestToken: () => Promise.resolve(guestToken),
                     dashboardUiConfig: {
                         hideTitle: true,
                         hideChartControls: true,
@@ -38,6 +41,7 @@ const SupersetDashboard = () => {
 
             } catch (error) {
                 console.error("❌ Error al cargar dashboard:", error);
+                // Si el error es 401, podríamos redirigir al login, pero por ahora solo logueamos
             }
         };
 
@@ -46,7 +50,7 @@ const SupersetDashboard = () => {
 
     return (
         <div className="dashboard-wrapper">
-            <h1>Panel Financiero</h1>
+            <h2 className="mb-3 px-4 pt-3">Panel Financiero</h2>
             <div id="dashboard-container" className="superset-container"></div>
         </div>
     );
