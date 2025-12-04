@@ -1,45 +1,39 @@
 import React, { useEffect } from "react";
 import { embedDashboard } from "@superset-ui/embedded-sdk";
 import axios from "axios";
-import "../../Estilos/superset.css"; // Importamos los estilos
+import "../../Estilos/superset.css";
 
 const SupersetDashboard = () => {
 
     useEffect(() => {
-        // Definimos la función para montar el dashboard
         const mountDashboard = async () => {
-
-            const dashboardId = "7e1679bc-c9d4-4ac4-a0c1-16521659a5ed"; // ✅ TU ID ACTUALIZADO
-            const supersetDomain = "http://localhost:8088"; // Tu Superset local
-
             try {
+                // PASO 1: Pedimos TODO al backend (Token, URL y ID)
+                // Usamos una ruta relativa o la variable de entorno de tu API
+                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+                console.log("🔄 Contactando al Backend...");
+                const response = await axios.get(`${apiUrl}/api/preset-token`);
+
+                const { token, supersetDomain, dashboardId } = response.data;
+                console.log("✅ Datos recibidos. Conectando a:", supersetDomain);
+
+                // PASO 2: Embeber con los datos dinámicos
                 await embedDashboard({
                     id: dashboardId,
                     supersetDomain: supersetDomain,
-                    mountPoint: document.getElementById("dashboard-container"), // El DIV donde se pintará
-
-                    // AQUÍ CONECTAMOS CON LARAVEL
-                    fetchGuestToken: async () => {
-                        console.log("🔄 Pidiendo token a Laravel...");
-
-                        // Llama a tu ruta de Laravel (ajusta el puerto si no es 8000)
-                        const response = await axios.get("http://localhost:8000/api/preset-token");
-
-                        console.log("✅ Token recibido:", response.data.token);
-                        return response.data.token;
-                    },
-
+                    mountPoint: document.getElementById("dashboard-container"),
+                    fetchGuestToken: () => Promise.resolve(token), // Ya tenemos el token, lo pasamos directo
                     dashboardUiConfig: {
-                        hideTitle: true, // Ocultar título de Superset
-                        hideChartControls: true, // Ocultar controles de gráficos
-                        hideTab: true, // Ocultar pestañas si las hubiera
-                        filters: {
-                            expanded: false, // Filtros colapsados por defecto
-                        }
+                        hideTitle: true,
+                        hideChartControls: true,
+                        hideTab: true,
+                        filters: { expanded: false }
                     },
                 });
+
             } catch (error) {
-                console.error("❌ Error al embeber el dashboard:", error);
+                console.error("❌ Error al cargar dashboard:", error);
             }
         };
 
@@ -49,7 +43,6 @@ const SupersetDashboard = () => {
     return (
         <div className="dashboard-wrapper">
             <h1>Panel Financiero</h1>
-            {/* Este es el div donde Superset inyectará el iframe */}
             <div id="dashboard-container" className="superset-container"></div>
         </div>
     );
