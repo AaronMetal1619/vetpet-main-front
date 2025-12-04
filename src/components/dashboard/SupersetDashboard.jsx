@@ -8,22 +8,26 @@ const SupersetDashboard = () => {
     useEffect(() => {
         const mountDashboard = async () => {
             try {
-                // PASO 1: Pedimos TODO al backend (Token, URL y ID)
-                // Usamos una ruta relativa o la variable de entorno de tu API
-                const apiUrl = import.meta.env.VITE_API_URL || "https://4169f60d.us1a.app.preset.io";
+                // 🚨 CAMBIO DE SEGURIDAD:
+                // Antes: || "http://localhost:8000"
+                // Ahora: || "https://vetpet-back.onrender.com"
+                // Si no encuentra la variable de entorno, asume que estamos en Producción.
 
-                console.log("🔄 Contactando al Backend...");
+                const apiUrl = import.meta.env.VITE_API_URL || "https://vetpet-back.onrender.com";
+
+                console.log(`🔄 Contactando al Backend en: ${apiUrl}`);
+
+                // Hacemos la petición
                 const response = await axios.get(`${apiUrl}/api/preset-token`);
 
                 const { token, supersetDomain, dashboardId } = response.data;
                 console.log("✅ Datos recibidos. Conectando a:", supersetDomain);
 
-                // PASO 2: Embeber con los datos dinámicos
                 await embedDashboard({
                     id: dashboardId,
                     supersetDomain: supersetDomain,
                     mountPoint: document.getElementById("dashboard-container"),
-                    fetchGuestToken: () => Promise.resolve(token), // Ya tenemos el token, lo pasamos directo
+                    fetchGuestToken: () => Promise.resolve(token),
                     dashboardUiConfig: {
                         hideTitle: true,
                         hideChartControls: true,
