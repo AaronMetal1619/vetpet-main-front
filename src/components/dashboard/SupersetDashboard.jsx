@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+/*import React, { useEffect, useState } from "react";
 import { embedDashboard } from "@superset-ui/embedded-sdk";
 import axios from "axios";
 import "../../Estilos/superset.css";
@@ -68,7 +68,7 @@ const SupersetDashboard = () => {
         <div className="dashboard-wrapper">
             <div className="d-flex justify-content-between align-items-center px-4 pt-3 mb-3">
                 <h2 className="m-0">Panel Financiero</h2>
-                {/* Botón de recarga manual por si acaso */}
+                {/* Botón de recarga manual por si acaso *//*}
                 <button className="btn btn-sm btn-outline-secondary" onClick={() => window.location.reload()}>
                     <i className="bi bi-arrow-clockwise"></i> Recargar
                 </button>
@@ -85,4 +85,4 @@ const SupersetDashboard = () => {
     );
 };
 
-export default SupersetDashboard;
+export default SupersetDashboard;*/

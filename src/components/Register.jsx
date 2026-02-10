@@ -16,34 +16,32 @@ const Register = ({ onRegister }) => {
     setLoading(true);
 
     try {
-      console.log("Enviando datos de registro: ", formData);
-      // NUEVA URL
+      console.log("Enviando datos de registro a Oracle...", formData);
+      
+      // CAMBIO IMPORTANTE: URL LOCAL
       const response = await axios.post(
-        'https://vetpet-back.onrender.com/api/register',
+        'http://127.0.0.1:8000/api/register',
         formData,
         {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: false, 
+          headers: { 'Content-Type': 'application/json' }
         }
       );
 
       console.log("Respuesta del servidor: ", response.data);
 
-      if (response.data?.token && response.data?.user) {
-        localStorage.setItem('token', response.data.token);
+      if (response.data?.user) {
+        // Guardamos un token temporal (luego configuraremos Sanctum bien)
+        localStorage.setItem('token', response.data.token || 'demo-token');
         if (onRegister) {
           onRegister(response.data.user);
         }
-      } else {
-        setError('No se recibió un token válido del servidor.');
       }
     } catch (error) {
       console.error("Error durante el registro: ", error);
-      if (error.response?.data?.errors) {
-        const errorMessages = Object.values(error.response.data.errors).flat().join(', ');
-        setError(`Errores: ${errorMessages}`);
+      if (error.response?.data?.message) {
+         setError(error.response.data.message);
       } else {
-        setError(error.response?.data?.message || 'Error al registrar usuario');
+         setError('Error al conectar con el servidor Laravel/Oracle');
       }
     } finally {
       setLoading(false);
@@ -57,80 +55,31 @@ const Register = ({ onRegister }) => {
           <div className="col-lg-5 col-md-8">
             <div className="card shadow-lg border-0 rounded-4 overflow-hidden">
               <div className="bg-primary py-4 text-center text-white">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/2919/2919600.png"
-                  alt="Logo Veterinaria"
-                  className="img-fluid mb-3"
-                  style={{ height: '70px' }}
-                />
-                <h2 className="mb-0">Crear Cuenta</h2>
-                <p className="mb-0 opacity-75">Únete a nuestra comunidad</p>
+                 <h2 className="mb-0">Crear Cuenta VitaFem</h2>
+                 <p className="mb-0 opacity-75">Registro de usuarios</p>
               </div>
-
               <div className="card-body p-4 p-md-5">
                 {error && (
                   <div className="alert alert-danger d-flex align-items-center mb-4 py-2">
-                    <i className="bi bi-exclamation-triangle-fill me-2 flex-shrink-0"></i>
                     <div>{error}</div>
                   </div>
                 )}
-
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
-                    <label htmlFor="name" className="form-label fw-semibold">
-                      <i className="bi bi-person-fill text-primary me-2"></i>
-                      Nombre Completo
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="form-control"
-                        placeholder="Escribe tu nombre"
-                        required
-                      />
+                    <label className="form-label fw-semibold">Nombre Completo</label>
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="form-control" required />
                   </div>
-
                   <div className="mb-4">
-                    <label htmlFor="email" className="form-label fw-semibold">
-                      <i className="bi bi-envelope-fill text-primary me-2"></i>
-                      Correo Electrónico
-                    </label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="form-control"
-                        placeholder="Correo electrónico"
-                        required
-                      />
+                    <label className="form-label fw-semibold">Correo Electrónico</label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-control" required />
                   </div>
-
                   <div className="mb-4">
-                    <label htmlFor="password" className="form-label fw-semibold">
-                      <i className="bi bi-key-fill text-primary me-2"></i>
-                      Contraseña
-                    </label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        className="form-control"
-                        placeholder="Crea una contraseña"
-                        required
-                      />
+                    <label className="form-label fw-semibold">Contraseña</label>
+                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="form-control" required />
                   </div>
-
                   <div className="d-grid">
-                    <button
-                      type="submit"
-                      className="btn btn-primary py-3"
-                      disabled={loading}
-                    >
-                      {loading ? 'Cargando...' : 'Registrarse'}
+                    <button type="submit" className="btn btn-primary py-3" disabled={loading}>
+                      {loading ? 'Guardando en Oracle...' : 'Registrarse'}
                     </button>
                   </div>
                 </form>

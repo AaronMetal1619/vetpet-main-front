@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 // ✅ IMPORTACIONES REALES (Asegúrate de que los archivos estén en la misma carpeta)
 import VetsManagement from './VetsManagement';
 import AppointmentsIndex from './AppointmentsIndex';
-import SupersetDashboard from './SupersetDashboard';
+//import SupersetDashboard from './SupersetDashboard';
 
 // Componente Placeholder para Usuarios (Este se queda así porque aún no tienes el real)
 const UsersTableFake = () => (
