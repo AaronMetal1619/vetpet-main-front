@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 // Importa tus imagenes si las tienes en src/assets, si no comenta estas lineas
-// import eyeOpen from "../assets/eyeOpen.jpg";
-// import eyeClose from "../assets/eyeClose.jpg";
+import eyeOpen from "../assets/eyeOpen.jpg";
+import eyeClose from "../assets/eyeClose.jpg";
 
 const Login = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
