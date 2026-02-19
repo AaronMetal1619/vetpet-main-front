@@ -9,9 +9,9 @@ const Home = () => {
     };
 
     // 🎨 Paleta azul pastel
-    const mainBlue = '#5A8DEE';
+    const mainBlue = '#c36eeae9';
     const lightBlueBg = '#E6F0FF';
-    const darkText = '#2E3A59';
+    const darkText = '#010101';
 
     // 👉 Cargar Bootstrap Icons desde CDN
     useEffect(() => {
@@ -34,20 +34,20 @@ const Home = () => {
                         </div>
                         <div className="carousel-inner">
                             {[{
-                                img: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee",
+                                img: "https://www.shutterstock.com/image-photo/smiling-doctor-stethoscope-clipboard-on-600nw-2536277671.jpg",
                                 alt: "Veterinario examinando un cachorro",
-                                title: "Cuidamos a tu mascota",
-                                text: "Desde atención médica hasta cuidados especiales para tu mejor amigo."
+                                title: "Cuidamos tu salud",
+                                text: "Desde atención médica hasta cuidados especiales."
                             }, {
-                                img: "https://images.unsplash.com/photo-1601758003122-53c40e686a19",
+                                img: "https://static.vecteezy.com/system/resources/thumbnails/026/375/249/small/ai-generative-portrait-of-confident-male-doctor-in-white-coat-and-stethoscope-standing-with-arms-crossed-and-looking-at-camera-photo.jpg",
                                 alt: "Veterinario realizando examen",
                                 title: "Atención personalizada",
-                                text: "Brindamos el mejor cuidado adaptado a cada mascota."
+                                text: "Brindamos el mejor cuidado adaptado a persona."
                             }, {
-                                img: "https://images.unsplash.com/photo-1450778869180-41d0601e046e",
+                                img: "https://www.shutterstock.com/image-photo/healthcare-medical-staff-concept-portrait-600nw-2281024823.jpg",
                                 alt: "Clínica veterinaria moderna",
-                                title: "Tu mascota en buenas manos",
-                                text: "Nuestro equipo está siempre listo para lo mejor."
+                                title: "Tu salud en buenas manos",
+                                text: "Nuestro equipo está siempre listo para darte lo mejor."
                             }].map((slide, i) => (
                                 <div className={`carousel-item${i === 0 ? ' active' : ''}`} key={i}>
                                     <img
@@ -66,13 +66,13 @@ const Home = () => {
                                             transform: 'translate(-50%, -50%)',
                                             width: '90%',
                                             maxWidth: '800px',
-                                            backgroundColor: i === 0 ? 'rgba(90, 141, 238, 0.5)' : 'rgba(90, 141, 238, 0.85)',
+                                            backgroundColor: i === 0 ? 'rgba(90, 142, 238, 0)' : 'rgba(90, 141, 238, 0.85)',
                                             backdropFilter: i === 0 ? 'blur(6px)' : 'none',
                                             WebkitBackdropFilter: i === 0 ? 'blur(6px)' : 'none',
                                         }}
                                     >
-                                        <h1 className="text-white fw-bold display-5 mb-3">{slide.title}</h1>
-                                        <p className="text-white fs-5 mb-4">{slide.text}</p>
+                                        <h1 className="text-black fw-bold display-5 mb-3">{slide.title}</h1>
+                                        <p className="text-black fs-5 mb-4">{slide.text}</p>
                                         <button className="btn btn-lg shadow" onClick={handleClick}
                                             style={{ backgroundColor: mainBlue, color: 'white', border: 'none' }}>
                                             Agenda tu cita <i className="bi bi-calendar-plus ms-2"></i>
@@ -97,7 +97,7 @@ const Home = () => {
                         <div className="text-center mb-5">
                             <h2 className="fw-bold mb-3 fs-4" style={{ color: mainBlue }}>Nuestros Servicios</h2>
                             <p className="text-muted small mx-auto" style={{ maxWidth: '700px' }}>
-                                Ofrecemos una amplia gama de servicios para el cuidado integral de tu mascota
+                                Ofrecemos una amplia gama de servicios para el cuidado integral de tu salud
                             </p>
                         </div>
                         <div className="row g-4">

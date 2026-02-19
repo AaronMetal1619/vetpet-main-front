@@ -1,450 +1,288 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash, FaPlus, FaTimes } from "react-icons/fa"; // Agregué iconos nuevos
+import { FaCamera, FaSave, FaUserMd, FaNotesMedical, FaFileMedicalAlt, FaEdit, FaPhone, FaEnvelope, FaBirthdayCake, FaArrowLeft } from "react-icons/fa";
 import "../Estilos/Perfil.css";
 
 function Perfil() {
-  // --- ESTADOS DE USUARIO ---
-  const [userData, setUserData] = useState(null);
-  const [isEditingUser, setIsEditingUser] = useState(false); // Renombrado para claridad
-  const [editedUserData, setEditedUserData] = useState({});
-
-  // --- ESTADOS DEL CARDEX (MASCOTAS) ---
-  const [pets, setPets] = useState([]);
-  const [showPetModal, setShowPetModal] = useState(false);
-  const [isEditingPet, setIsEditingPet] = useState(false);
-  const [currentPet, setCurrentPet] = useState({
-    id: null,
-    name: "",
-    owner_name: "", // Nuevo campo solicitado
-    age: "",
-    breed: "",
-    allergies: "Ninguna",
-    chronic_diseases: "Ninguna",
-    surgeries: "Ninguna",
-    photo: null, // Archivo
-    photo_url: "" // URL para previsualizar
-  });
-    // Agrega estos estados junto a los otros
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [selectedPetHistory, setSelectedPetHistory] = useState([]);
-  const [selectedPetName, setSelectedPetName] = useState("");
-
-  // Función para abrir el modal
-  const handleShowHistory = (pet) => {
-      setSelectedPetName(pet.name);
-      setSelectedPetHistory(pet.medical_history || []); // Laravel nos manda esto gracias al "with"
-      setShowHistoryModal(true);
-  };
-
-  // --- ESTADOS DE ADORNO (FOTOS/CITAS) ---
-  const [photos] = useState([
-    { url: "https://via.placeholder.com/150" }, // Placeholders para ejemplo
-    { url: "https://via.placeholder.com/150" },
-  ]);
-  const [appointments] = useState([
-    { date: "2025-05-01", time: "10:00 AM", description: "Consulta general" },
-  ]);
-
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const storedUser = JSON.parse(localStorage.getItem("user"));
 
-  // 1. CARGA INICIAL DE DATOS
+  // --- ESTADOS ---
+  const [isEditing, setIsEditing] = useState(false); // NUEVO: Controla si vemos la tarjeta o el formulario
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  // Estado de los datos
+  const [formData, setFormData] = useState({
+    ID_USUARIO: storedUser?.id_usuario || storedUser?.ID_USUARIO || "",
+    NOMBRE_COMPLETO: "",
+    CORREO: "",
+    TELEFONO: "",
+    FECHA_NACIMIENTO: "",
+    TIPO_SANGRE: "",
+    ALERGIAS_PRINCIPALES: "",
+    SEXO: "F",
+  });
+
+  // Estado de la foto
+  const [previewImage, setPreviewImage] = useState("https://cdn-icons-png.flaticon.com/512/6075/6075889.png");
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // --- FUNCIÓN AUXILIAR PARA LA FECHA ---
+  // Corta la parte de la hora que manda Oracle (YYYY-MM-DD HH:MM:SS -> YYYY-MM-DD)
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    return dateString.split(' ')[0]; // O .split('T')[0] si viene formato ISO
+  };
+
+  // --- CARGA DE DATOS ---
   useEffect(() => {
-    if (token) {
-      fetchUserData();
-      fetchPets();
-    }
-  }, [token]);
-
-  const fetchUserData = () => {
-    axios.get("https://vetpet-back.onrender.com/api/me", { // URL CORREGIDA A PROD
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setUserData(res.data);
-        setEditedUserData(res.data);
-      })
-      .catch((err) => console.error("Error usuario:", err));
-  };
-
-  const fetchPets = () => {
-    axios.get("https://vetpet-back.onrender.com/api/pets", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setPets(res.data))
-      .catch((err) => console.error("Error mascotas:", err));
-  };
-
-  // --- LÓGICA DE USUARIO ---
-  const handleUserInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditedUserData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleUserFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) setEditedUserData((prev) => ({ ...prev, profilePic: file }));
-  };
-
-  const handleUserSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", editedUserData.name);
-    formData.append("email", editedUserData.email);
-    formData.append("phone", editedUserData.phone);
-    if (editedUserData.profilePic instanceof File) {
-      formData.append("profile_picture", editedUserData.profilePic);
+    if (!token) {
+      navigate("/login");
+      return;
     }
 
-    try {
-      const res = await axios.post(
-        `https://vetpet-back.onrender.com/api/update-profile/${userData.id}`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
-      );
-      setUserData(res.data.user);
-      setIsEditingUser(false);
-    } catch (error) {
-      console.error("Error updating user:", error);
-    }
+    const fetchProfileData = async () => {
+      try {
+        const userId = storedUser?.id_usuario || storedUser?.ID_USUARIO;
+        if (!userId) return;
+
+        const response = await axios.get(`http://127.0.0.1:8000/api/pacientes/perfil/${userId}`);
+        const data = response.data;
+
+        setFormData((prev) => ({
+          ...prev,
+          NOMBRE_COMPLETO: data.NOMBRE_COMPLETO || data.nombre_completo || prev.NOMBRE_COMPLETO,
+          CORREO: data.CORREO || data.correo || prev.CORREO,
+          TELEFONO: data.TELEFONO || data.telefono || "",
+          // APLICAMOS LA CORRECCIÓN DE FECHA AQUÍ
+          FECHA_NACIMIENTO: formatDateForInput(data.FECHA_NACIMIENTO || data.fecha_nacimiento),
+          TIPO_SANGRE: data.TIPO_SANGRE || data.tipo_sangre || "",
+          ALERGIAS_PRINCIPALES: data.ALERGIAS_PRINCIPALES || data.alergias_principales || "",
+          SEXO: data.SEXO || data.sexo || "F",
+        }));
+
+        if (data.FOTO_PERFIL) {
+          setPreviewImage(data.FOTO_PERFIL);
+        }
+      } catch (error) {
+        console.error("Error cargando perfil:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [token, navigate]);
+
+  // --- MANEJADORES ---
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // --- LÓGICA DE CARDEX (MASCOTAS) ---
-
-  // Abrir modal para crear
-  const openNewPetModal = () => {
-    setCurrentPet({
-      id: null, name: "", owner_name: userData.name, age: "", breed: "", 
-      allergies: "Ninguna", chronic_diseases: "Ninguna", surgeries: "Ninguna", 
-      photo: null, photo_url: ""
-    });
-    setIsEditingPet(false);
-    setShowPetModal(true);
-  };
-
-  // Abrir modal para editar
-  const openEditPetModal = (pet) => {
-    setCurrentPet({
-      ...pet,
-      photo: null, // Reseteamos el archivo input, mantenemos la URL existente
-      photo_url: pet.photo_url // Asumiendo que el back devuelve esto
-    });
-    setIsEditingPet(true);
-    setShowPetModal(true);
-  };
-
-  const handlePetInputChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentPet((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handlePetFileChange = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setCurrentPet((prev) => ({ 
-        ...prev, 
-        photo: file,
-        photo_url: URL.createObjectURL(file) // Previsualización local
-      }));
+      setSelectedFile(file);
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
-  // GUARDAR MASCOTA (Crear o Editar)
-  const handlePetSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", currentPet.name);
-    formData.append("owner_name", currentPet.owner_name);
-    formData.append("age", currentPet.age);
-    formData.append("breed", currentPet.breed);
-    formData.append("allergies", currentPet.allergies);
-    formData.append("chronic_diseases", currentPet.chronic_diseases);
-    formData.append("surgeries", currentPet.surgeries);
+    setLoading(true);
+    setMessage({ type: "", text: "" });
+
+    const dataToSend = new FormData();
+    // Agregamos todos los campos al FormData
+    Object.keys(formData).forEach(key => {
+        dataToSend.append(key, formData[key] || ""); // Enviar cadena vacía si es null
+    });
     
-    if (currentPet.photo instanceof File) {
-      formData.append("photo", currentPet.photo);
+    if (selectedFile) {
+      dataToSend.append("FOTO_PERFIL", selectedFile);
     }
 
     try {
-      let url = "https://vetpet-back.onrender.com/api/pets";
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/pacientes/perfil",
+        dataToSend,
+        { headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` } }
+      );
+
+      setMessage({ type: "success", text: "¡Perfil actualizado!" });
       
-      if (isEditingPet) {
-        // Truco para Laravel: usar POST con _method=PUT para poder subir archivos
-        formData.append("_method", "PUT");
-        url = `${url}/${currentPet.id}`;
-      }
+      // Volvemos al modo "Tarjeta" después de guardar
+      setTimeout(() => {
+          setIsEditing(false);
+          setMessage({ type: "", text: "" }); // Limpiar mensaje
+      }, 1500);
 
-      await axios.post(url, formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" }
-      });
-
-      fetchPets(); // Recargar lista
-      setShowPetModal(false);
     } catch (error) {
-      console.error("Error guardando mascota:", error.response?.data || error.message);
-      alert("Error al guardar la mascota. Revisa la consola.");
+      console.error("Error:", error);
+      setMessage({ type: "error", text: "Error al guardar." });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ELIMINAR MASCOTA
-  const handleDeletePet = async (id) => {
-    if (!window.confirm("¿Estás seguro de eliminar este Cardex? Se borrarán los datos médicos.")) return;
-    
-    try {
-      await axios.delete(`https://vetpet-back.onrender.com/api/pets/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchPets();
-    } catch (error) {
-      console.error("Error eliminando mascota:", error);
-    }
-  };
+  // --- RENDERIZADO CONDICIONAL ---
 
-  if (!userData) return <div className="text-center mt-5">Cargando perfil...</div>;
-
-  return (
-    <main className="container my-5">
-      {/* --- SECCIÓN PERFIL DE USUARIO --- */}
-      <div className="profile-container shadow p-4 rounded bg-white">
-        <div className="profile-header d-flex align-items-center gap-4">
-          <div className="profile-img-container">
-            <img
-              src={
-                editedUserData.profilePic instanceof File
-                  ? URL.createObjectURL(editedUserData.profilePic)
-                  : userData.profile_picture || "https://st2.depositphotos.com/3895623/5589/v/450/depositphotos_55896913-stock-illustration-usershirt.jpg"
-              }
-              alt="Perfil"
-              className="rounded-circle"
-              style={{ width: "150px", height: "150px", objectFit: "cover" }}
-            />
-          </div>
-          <div className="profile-info flex-grow-1">
-            <h1>{userData.name}</h1>
-            <p className="text-muted">{userData.email}</p>
-
-            {userData.role === "admin" ? (
-               // ... (Tu código de admin se mantiene igual)
-               <p>Panel de Admin</p>
-            ) : (
-              <>
-                {isEditingUser ? (
-                  <form onSubmit={handleUserSubmit} className="mt-3">
-                    <div className="row">
-                        <div className="col-md-6 mb-2">
-                            <input name="name" className="form-control" value={editedUserData.name || ""} onChange={handleUserInputChange} placeholder="Nombre" />
-                        </div>
-                        <div className="col-md-6 mb-2">
-                            <input name="phone" className="form-control" value={editedUserData.phone || ""} onChange={handleUserInputChange} placeholder="Teléfono" />
-                        </div>
-                        <div className="col-12 mb-2">
-                             <input type="file" className="form-control" onChange={handleUserFileChange} />
-                        </div>
-                    </div>
-                    <button type="submit" className="btn btn-success me-2">Guardar</button>
-                    <button type="button" className="btn btn-secondary" onClick={() => setIsEditingUser(false)}>Cancelar</button>
-                  </form>
-                ) : (
-                  <button className="btn btn-outline-primary" onClick={() => setIsEditingUser(true)}>
-                    <FaEdit /> Editar Perfil
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        <hr className="my-5" />
-
-        {/* --- SECCIÓN CARDEX DE MASCOTAS --- */}
-        <div className="pets-section">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="text-primary">Cardex de Mascotas</h2>
-            <button className="btn btn-primary" onClick={openNewPetModal}>
-              <FaPlus /> Agregar Mascota
-            </button>
-          </div>
-
-          <div className="row">
-            {pets.length > 0 ? (
-              pets.map((pet) => (
-                <div key={pet.id} className="col-md-6 col-lg-4 mb-4">
-                  <div className="card h-100 shadow-sm border-0">
-                    <img 
-                        src={pet.photo_url || "https://cdn-icons-png.flaticon.com/512/616/616408.png"} 
-                        className="card-img-top" 
-                        alt={pet.name}
-                        style={{ height: "200px", objectFit: "cover" }} 
+  // 1. VISTA DE SOLO LECTURA (TIPO LINKEDIN)
+  if (!isEditing) {
+    return (
+      <div className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-9">
+            <div className="card shadow border-0 rounded-4 overflow-hidden">
+              {/* Banner Decorativo */}
+              <div className="bg-primary" style={{ height: "150px", background: "linear-gradient(90deg, #f189f1cf 0%, #c36eeae9 100%)" }}></div>
+              
+              <div className="card-body px-5 pb-5">
+                <div className="row align-items-end" style={{ marginTop: "-80px" }}>
+                  {/* Foto de Perfil */}
+                  <div className="col-lg-3 text-center text-lg-start">
+                    <img
+                      src={previewImage}
+                      alt="Perfil"
+                      className="rounded-circle border border-4 border-white shadow"
+                      style={{ width: "160px", height: "160px", objectFit: "cover", backgroundColor: "#fff" }}
                     />
-                    <div className="card-body">
-                      <h4 className="card-title fw-bold">{pet.name}</h4>
-                      <h6 className="card-subtitle mb-2 text-muted">{pet.breed} - {pet.age} años</h6>
-                      
-                      <div className="small mt-3">
-                        {/* LÓGICA DE PRÓXIMA CITA */}
-                          {pet.next_appointment ? (
-                              <div className="alert alert-info py-1 px-2 mb-2" style={{ fontSize: '0.85rem' }}>
-                                  <strong>Próxima Cita:</strong><br/>
-                                  {pet.next_appointment.date} a las {pet.next_appointment.time}
-                              </div>
-                          ) : (
-                              <div className="text-muted mb-2" style={{ fontSize: '0.8rem' }}>
-                                  Sin citas pendientes
-                              </div>
-                          )}
-                        <p className="mb-1"><strong>Dueño:</strong> {pet.owner_name}</p>
-                        <p className="mb-1 text-danger"><strong>Alergias:</strong> {pet.allergies}</p>
-                        <p className="mb-1 text-warning"><strong>Enfermedades:</strong> {pet.chronic_diseases}</p>
-                        <p className="mb-1"><strong>Cirugías:</strong> {pet.surgeries}</p>
-                      </div>
+                  </div>
+                  {/* Nombre y Botón Editar */}
+                  <div className="col-lg-9 d-flex justify-content-between align-items-center flex-wrap pt-4 pt-lg-0">
+                    <div>
+                      <h2 className="fw-bold mb-0">{formData.NOMBRE_COMPLETO || "Usuario VitaFem"}</h2>
+                      <p className="text-muted mb-0">{formData.CORREO}</p>
                     </div>
-                    <div className="card-footer bg-white border-top-0 pt-0">
-    <div className="d-flex justify-content-between gap-2">
-            {/* Botón Historial (Azul Informativo) */}
-            <button 
-                className="btn btn-sm btn-outline-info flex-grow-1 d-flex align-items-center justify-content-center"
-                onClick={() => handleShowHistory(pet)}
-            >
-                <span className="me-1">📋</span> Historial
-            </button>
+                    <button 
+                        className="btn btn-outline-primary rounded-pill px-4 mt-3 mt-lg-0"
+                        onClick={() => setIsEditing(true)} // ACTIVA EL MODO EDICIÓN
+                    >
+                        <FaEdit className="me-2" /> Editar Perfil
+                    </button>
+                  </div>
+                </div>
 
-            {/* Botón Editar (Amarillo) */}
-            <button 
-                className="btn btn-sm btn-outline-warning flex-grow-1 d-flex align-items-center justify-content-center" 
-                onClick={() => openEditPetModal(pet)}
-            >
-                <FaEdit className="me-1" /> Editar
-            </button>
+                <hr className="my-4" />
 
-            {/* Botón Eliminar (Rojo) */}
-            <button 
-                className="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center" 
-                onClick={() => handleDeletePet(pet.id)}
-                title="Eliminar"
-                         >
-                        <FaTrash />
-                        </button>
-                      </div>
+                {/* Resumen de Datos */}
+                <div className="row g-4">
+                  <div className="col-md-6">
+                    <h5 className="text-primary fw-bold mb-3"><FaUserMd className="me-2"/> Información Personal</h5>
+                    <ul className="list-unstyled">
+                      <li className="mb-2"><FaPhone className="text-muted me-2"/> <strong>Teléfono:</strong> {formData.TELEFONO || "No registrado"}</li>
+                      <li className="mb-2"><FaBirthdayCake className="text-muted me-2"/> <strong>Nacimiento:</strong> {formData.FECHA_NACIMIENTO || "No registrado"}</li>
+                      <li className="mb-2"><strong>Sexo:</strong> {formData.SEXO === "F" ? "Femenino" : "Masculino"}</li>
+                    </ul>
+                  </div>
+                  <div className="col-md-6">
+                    <h5 className="text-danger fw-bold mb-3"><FaNotesMedical className="me-2"/> Resumen Médico</h5>
+                    <div className="bg-light p-3 rounded-3">
+                        <div className="d-flex justify-content-between mb-2">
+                            <span>Tipo de Sangre:</span>
+                            <span className="badge bg-danger">{formData.TIPO_SANGRE || "N/A"}</span>
+                        </div>
+                        <p className="mb-1 text-muted small fw-bold">Alergias:</p>
+                        <p className="mb-0 small">{formData.ALERGIAS_PRINCIPALES || "Ninguna registrada"}</p>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-12 text-center text-muted">
-                <p>No tienes mascotas registradas aún.</p>
               </div>
-            )}
+            </div>
           </div>
         </div>
-
-        {/* --- MODAL PARA AGREGAR/EDITAR MASCOTA --- */}
-        {showPetModal && (
-            <div className="modal-overlay" style={{
-                position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-                backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
-            }}>
-                <div className="modal-content bg-white p-4 rounded shadow-lg" style={{ width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
-                    <div className="d-flex justify-content-between mb-3">
-                        <h3>{isEditingPet ? "Editar Cardex" : "Nuevo Cardex"}</h3>
-                        <button className="btn btn-link text-dark" onClick={() => setShowPetModal(false)}><FaTimes size={20}/></button>
-                    </div>
-                    
-                    <form onSubmit={handlePetSubmit}>
-                        <div className="row g-3">
-                            <div className="col-md-6">
-                                <label className="form-label">Nombre Mascota</label>
-                                <input name="name" className="form-control" value={currentPet.name || ""} onChange={handlePetInputChange} required />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label">Raza</label>
-                                <input name="breed" className="form-control" value={currentPet.breed || ""} onChange={handlePetInputChange} required />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label">Edad (años)</label>
-                                <input type="number" name="age" className="form-control" value={currentPet.age || ""} onChange={handlePetInputChange} required />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label">Nombre Dueño</label>
-                                <input name="owner_name" className="form-control" value={currentPet.owner_name || ""} onChange={handlePetInputChange} required />
-                            </div>
-                            
-                            <div className="col-12">
-                                <label className="form-label text-danger">Alergias</label>
-                                <textarea name="allergies" className="form-control" rows="2" value={currentPet.allergies || ""} onChange={handlePetInputChange}></textarea>
-                            </div>
-                            <div className="col-12">
-                                <label className="form-label text-warning">Enfermedades Crónicas</label>
-                                <textarea name="chronic_diseases" className="form-control" rows="2" value={currentPet.chronic_diseases || ""} onChange={handlePetInputChange}></textarea>
-                            </div>
-                            <div className="col-12">
-                                <label className="form-label">Cirugías Previas</label>
-                                <textarea name="surgeries" className="form-control" rows="2" value={currentPet.surgeries || ""} onChange={handlePetInputChange}></textarea>
-                            </div>
-                            
-                            <div className="col-12">
-                                <label className="form-label">Foto de la Mascota</label>
-                                <input type="file" className="form-control" onChange={handlePetFileChange} accept="image/*" />
-                                {currentPet.photo_url && (
-                                    <div className="mt-2 text-center">
-                                        <img src={currentPet.photo_url} alt="Previsualización" style={{ height: '100px', borderRadius: '8px' }} />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="mt-4 d-grid gap-2">
-                            <button type="submit" className="btn btn-primary btn-lg">
-                                {isEditingPet ? "Actualizar Cardex" : "Guardar Mascota"}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        )}
-        {/* MODAL DE HISTORIAL MÉDICO */}
-{showHistoryModal && (
-    <div className="modal-overlay" style={{
-        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-        backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1050
-    }}>
-        <div className="modal-content bg-white p-4 rounded shadow-lg" style={{ width: '90%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto' }}>
-            <div className="d-flex justify-content-between mb-3 border-bottom pb-2">
-                <h4 className="m-0">📋 Historial de {selectedPetName}</h4>
-                <button className="btn btn-close" onClick={() => setShowHistoryModal(false)}>X</button>
-            </div>
-
-            {selectedPetHistory.length > 0 ? (
-                <div className="list-group">
-                    {selectedPetHistory.map((record) => (
-                        <div key={record.id} className="list-group-item list-group-item-action flex-column align-items-start">
-                            <div className="d-flex w-100 justify-content-between">
-                                <h5 className="mb-1 text-primary">{record.clinic_name}</h5>
-                                <small className="text-muted">{record.visit_date}</small>
-                            </div>
-                            <p className="mb-1"><strong>Diagnóstico:</strong> {record.diagnosis}</p>
-                            {record.treatment && (
-                                <small className="text-muted"><strong>Tratamiento:</strong> {record.treatment}</small>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-4 text-muted">
-                    <p>No hay registros médicos previos.</p>
-                </div>
-            )}
-            
-            <div className="mt-3 text-end">
-                <button className="btn btn-secondary" onClick={() => setShowHistoryModal(false)}>Cerrar</button>
-            </div>
-        </div>
-    </div>
-            )}
-
       </div>
-    </main>
+    );
+  }
+
+  // 2. VISTA DE EDICIÓN (FORMULARIO)
+  return (
+    <div className="container py-5">
+      <div className="row justify-content-center">
+        <div className="col-lg-10">
+            {/* Botón para cancelar/regresar */}
+            <button className="btn btn-link text-decoration-none text-muted mb-3 ps-0" onClick={() => setIsEditing(false)}>
+                <FaArrowLeft className="me-2" /> Volver al perfil
+            </button>
+
+          <div className="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+             <div className="bg-light p-4 text-center">
+                 <h3 className="fw-bold text-primary">Editando mi Expediente</h3>
+                 <p className="text-muted small">Actualiza tu información personal y médica</p>
+             </div>
+             
+             <div className="card-body p-4">
+                {/* Previsualización de foto en modo edición */}
+                <div className="text-center mb-4">
+                    <div className="position-relative d-inline-block">
+                        <img src={previewImage} className="rounded-circle shadow-sm" style={{ width: "120px", height: "120px", objectFit: "cover" }} alt="Editando" />
+                        <label htmlFor="photo-upload" className="position-absolute bottom-0 end-0 bg-primary text-white p-2 rounded-circle shadow cursor-pointer" style={{ cursor: "pointer" }}>
+                          <FaCamera />
+                        </label>
+                        <input id="photo-upload" type="file" accept="image/*" className="d-none" onChange={handleImageChange} />
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="row g-4">
+                        {/* Mismos campos de antes... */}
+                        <div className="col-md-6">
+                            <label className="form-label fw-bold small text-muted">Nombre Completo</label>
+                            <input type="text" name="NOMBRE_COMPLETO" className="form-control" value={formData.NOMBRE_COMPLETO} onChange={handleChange} required />
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label fw-bold small text-muted">Teléfono</label>
+                            <input type="tel" name="TELEFONO" className="form-control" value={formData.TELEFONO} onChange={handleChange} />
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label fw-bold small text-muted">Fecha de Nacimiento</label>
+                            {/* Input Date corregido */}
+                            <input type="date" name="FECHA_NACIMIENTO" className="form-control" value={formData.FECHA_NACIMIENTO} onChange={handleChange} />
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label fw-bold small text-muted">Tipo de Sangre</label>
+                            <select name="TIPO_SANGRE" className="form-select" value={formData.TIPO_SANGRE} onChange={handleChange}>
+                                <option value="">Selecciona</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label fw-bold small text-muted">Sexo</label>
+                            <select name="SEXO" className="form-select" value={formData.SEXO} onChange={handleChange}>
+                                <option value="F">Femenino</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                        </div>
+                        <div className="col-12">
+                            <label className="form-label fw-bold small text-muted">Alergias</label>
+                            <textarea name="ALERGIAS_PRINCIPALES" className="form-control" rows="3" value={formData.ALERGIAS_PRINCIPALES} onChange={handleChange}></textarea>
+                        </div>
+                    </div>
+
+                    {message.text && (
+                        <div className={`alert ${message.type === "success" ? "alert-success" : "alert-danger"} mt-3`}>{message.text}</div>
+                    )}
+
+                    <div className="d-grid gap-2 mt-4">
+                        <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
+                            {loading ? "Guardando..." : <><FaSave className="me-2"/> Guardar Cambios</>}
+                        </button>
+                        <button type="button" className="btn btn-light text-muted" onClick={() => setIsEditing(false)}>Cancelar</button>
+                    </div>
+                </form>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

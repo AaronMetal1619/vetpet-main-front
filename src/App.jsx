@@ -7,30 +7,29 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChatbotWidget from './components/ChatbotWidget';
 
-// Páginas Públicas
-import Login from './components/Login';
-import Register from './components/Register';
+// Páginas Públicas y Autenticación
+import AuthPage from './components/AuthPage'; // <--- EL NUEVO COMPONENTE ÚNICO
 import Home from './components/Home';
 import Perfil from './components/Perfil';
 import Servicios from './components/Servicios';
 import PanelSuscripciones from './components/PanelSuscripciones';
-import AgendarCita from './components/AgendarCita'; // Agendar del lado del cliente (Mapa)
-import CrearCitaCliente from './components/CrearCitaCliente'; // <--- NUEVO
+import AgendarCita from './components/AgendarCita'; 
+import CrearCitaCliente from './components/CrearCitaCliente';
 
 // Páginas del Dashboard (Privadas)
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
 import VetFormPage from './components/dashboard/VetFormPage'; 
-import AppointmentFormPage from './components/dashboard/AppointmentFormPage'; // ✅ NUEVO IMPORT
+import AppointmentFormPage from './components/dashboard/AppointmentFormPage';
 
 const AppContent = () => {
   const [user, setUser] = useState(null);
-  const [showRegister, setShowRegister] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+
+  // Ya no necesitamos 'showRegister' porque AuthPage lo maneja solito
 
   const location = useLocation();
   
-  // Lógica para saber cuándo usar "container-fluid" (ancho completo) vs "container" (centrado)
-  // Usamos ancho completo en el Dashboard y en los Formularios de Gestión
+  // Lógica para el ancho de página
   const isFullWidthPage = location.pathname.startsWith('/dashboard') || 
                           location.pathname.startsWith('/create-vet') ||
                           location.pathname.startsWith('/create-appointment');
@@ -42,20 +41,22 @@ const AppContent = () => {
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
-    // Validar sesión
+    // Validar sesión al cargar
     const token = localStorage.getItem('token');
     if (token) {
-      if(token === 'fake-token'){
-         const localUser = JSON.parse(localStorage.getItem('userLocal'));
+        // Opción A: Token falso de prueba
+      if(token === 'fake-token' || token === 'demo-token'){
+         const localUser = JSON.parse(localStorage.getItem('user')); // Ojo: cambié userLocal a 'user' para coincidir con AuthPage
          if(localUser) setUser(localUser);
       } else {
-        // ✅ URL DEL BACKEND NUEVO
-        axios.get('https://vetpet-back.onrender.com/api/me', {
+        // Opción B: Token real (Oracle/Laravel)
+        axios.get('http://127.0.0.1:8000/api/me', { // Apuntando a tu Localhost Laravel
           headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setUser(response.data))
         .catch(() => {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           setUser(null);
         });
       }
@@ -64,107 +65,93 @@ const AppContent = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userLocal');
+    localStorage.removeItem('user');
     setUser(null);
     window.location.href = "/";
   };
 
-  const handleLogin = (userData) => setUser(userData);
+  const handleLogin = (userData) => {
+      setUser(userData);
+  };
 
+  // --- RENDERIZADO PRINCIPAL ---
+  
+  // 1. SI EL USUARIO NO ESTÁ LOGUEADO: Mostramos solo el AuthPage
+  if (!user) {
+      return <AuthPage onLogin={handleLogin} />;
+  }
+
+  // 2. SI EL USUARIO SÍ ESTÁ LOGUEADO: Mostramos la App completa
   return (
     <div className={isFullWidthPage ? "container-fluid p-0" : "container mt-4"}>
       
-      {!user ? (
-        // === USUARIO NO LOGUEADO ===
-        <div className="container mt-5">
-          {showRegister ? (
-             <Register onRegister={handleLogin} />
-          ) : (
-             <>
-               <Login onLogin={handleLogin} />
-               <div className="text-center mt-3">
-                 <button className="btn btn-link" onClick={() => setShowRegister(true)}>
-                   ¿No tienes cuenta? Regístrate aquí
-                 </button>
-               </div>
-             </>
-          )}
-        </div>
-      ) : (
-        // === USUARIO LOGUEADO ===
-        <>
-          {/* Navbar visible siempre */}
-          <Navbar 
-            user={user}
-            handleLogout={handleLogout}
-            setShowContactModal={setShowContactModal}
-          />
+        {/* Navbar visible siempre */}
+        <Navbar 
+          user={user}
+          handleLogout={handleLogout}
+          setShowContactModal={setShowContactModal}
+        />
 
-          {/* Margen para evitar que el contenido quede bajo el Navbar */}
-          <div style={{ marginTop: '76px', minHeight: 'calc(100vh - 76px)' }}>
-            <Routes>
-              {/* Rutas Públicas (para usuario logueado) */}
-              <Route path="/" element={<Home />} />
-              <Route path="/servicios" element={<Servicios />} />
-              <Route path="/suscripciones" element={<PanelSuscripciones />} />
-              <Route path="/perfil" element={<Perfil />} />
-              <Route path="/agendar" element={<AgendarCita />} />
-              <Route path="/crear-cita-cliente" element={<CrearCitaCliente />} />
+        {/* Contenedor Principal */}
+        <div style={{ marginTop: '76px', minHeight: 'calc(100vh - 76px)' }}>
+          <Routes>
+            {/* Rutas Públicas (para usuario logueado) */}
+            <Route path="/" element={<Home />} />
+            <Route path="/servicios" element={<Servicios />} />
+            <Route path="/suscripciones" element={<PanelSuscripciones />} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/agendar" element={<AgendarCita />} />
+            <Route path="/crear-cita-cliente" element={<CrearCitaCliente />} />
 
-              {/* 🛡️ RUTAS PROTEGIDAS (ADMIN / PARTNER) */}
-              
-              {/* 1. Dashboard Principal */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute user={user} role="admin, partner">
-                    <div style={{ height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
-                       <AdminDashboard user={user} />
+            {/* 🛡️ RUTAS PROTEGIDAS (ADMIN / PARTNER) */}
+            
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute user={user} role="admin, partner">
+                  <div style={{ height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
+                     <AdminDashboard user={user} />
+                  </div>
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/create-vet" 
+              element={
+                <ProtectedRoute user={user} role="admin, partner">
+                    <div className="container py-4">
+                      <VetFormPage />
                     </div>
-                  </ProtectedRoute>
-                } 
-              />
+                </ProtectedRoute>
+              } 
+            />
 
-              {/* 2. Formulario Crear/Editar Veterinaria */}
-              <Route 
-                path="/create-vet" 
-                element={
-                  <ProtectedRoute user={user} role="admin, partner">
-                     <div className="container py-4">
-                        <VetFormPage />
-                     </div>
-                  </ProtectedRoute>
-                } 
-              />
+            <Route 
+              path="/create-appointment" 
+              element={
+                <ProtectedRoute user={user} role="admin, partner">
+                    <div className="container py-4">
+                      <AppointmentFormPage />
+                    </div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Cualquier otra ruta redirige al Home */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </div>
 
-              {/* 3. Formulario Crear Cita (✅ NUEVO) */}
-              <Route 
-                path="/create-appointment" 
-                element={
-                  <ProtectedRoute user={user} role="admin, partner">
-                     <div className="container py-4">
-                        <AppointmentFormPage />
-                     </div>
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </div>
+        {/* Widget Chatbot */}
+        <ChatbotWidget />
 
-          {/* Widget Chatbot */}
-          <ChatbotWidget />
-        </>
-      )}
-
-     {/* Modales Globales */}
+      {/* Modales Globales (Emergencia) */}
       {showContactModal && (
         <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: 'blur(3px)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content shadow-lg border-0">
               
-              {/* Encabezado Rojo para denotar Emergencia/Importancia */}
               <div className="modal-header bg-danger text-white">
                 <h5 className="modal-title fw-bold">
                   <i className="bi bi-shield-fill-exclamation me-2"></i>
@@ -174,7 +161,6 @@ const AppContent = () => {
               </div>
 
               <div className="modal-body text-center p-4">
-                {/* Icono grande de Android */}
                 <div className="mb-3">
                    <i className="bi bi-android2 text-success" style={{fontSize: '4.5rem'}}></i>
                 </div>
@@ -184,10 +170,9 @@ const AppContent = () => {
                   Instala nuestra aplicación oficial para acceder al <strong>Botón de Pánico Veterinario</strong> y geolocalización en tiempo real.
                 </p>
 
-                {/* Botón de Descarga Real */}
                 <div className="d-grid gap-2">
                   <a 
-                    href="/vetpet-app.apk" /* ⚠️ Asegúrate que el archivo esté en la carpeta 'public' */
+                    href="/vetpet-app.apk" 
                     download="VetPet_Emergencia.apk"
                     className="btn btn-dark btn-lg"
                   >

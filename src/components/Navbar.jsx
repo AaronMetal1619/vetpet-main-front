@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const Navbar = ({ user, handleLogout, setShowContactModal }) => {
   return (
     <nav className="navbar navbar-expand-md navbar-dark fixed-top shadow-lg"
-      style={{ background: 'linear-gradient(90deg, #6CA0DC, #89BFF1)', zIndex: 1030 }}>
+      style={{ background: 'linear-gradient(90deg, #c36eeae9, #f189f15b)', zIndex: 1030 }}>
       <div className="container-fluid">
         <Link className="navbar-brand text-white fw-bold" to="/">AgendaVET</Link>
         
