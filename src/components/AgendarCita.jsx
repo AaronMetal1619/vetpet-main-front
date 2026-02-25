@@ -1,169 +1,257 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'; // Importamos useMap
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// ✅ 1. TU ICONO DE VETERINARIA (La Huella)
-import iconoVetImg from '../assets/icono.png';
-
-const vetIcon = L.icon({
-  iconUrl: iconoVetImg,
-  iconSize: [45, 45],
-  iconAnchor: [22, 45],
-  popupAnchor: [0, -40],
-  className: 'rounded-circle border border-white shadow-sm'
-});
-
-// ✅ 2. NUEVO ICONO PARA EL USUARIO (Una persona o pin azul)
-const userIcon = L.icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131546.png", // Icono de usuario gratis
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -40],
-});
-
-// ✅ 3. COMPONENTE AUXILIAR PARA RE-CENTRAR EL MAPA
-// Leaflet no se mueve automáticamente si cambias el estado "center", necesitamos esto:
-const RecenterMap = ({ lat, lng }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (lat && lng) {
-      map.setView([lat, lng], 14); // Zoom 14 para ver detalle cercano
-    }
-  }, [lat, lng, map]);
-  return null;
-};
+import axios from 'axios';
+import { FaUserMd, FaCalendarAlt, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 
 const AgendarCita = () => {
-  const [veterinarias, setVeterinarias] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [myLocation, setMyLocation] = useState(null); // Estado para ubicación del usuario
-  const navigate = useNavigate();
-  
-  // Coordenadas por defecto (CDMX) por si el usuario niega el permiso
-  const defaultCenter = [19.4326, -99.1332];
+    const navigate = useNavigate();
+    const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    // A. Obtener Ubicación del Usuario
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setMyLocation([position.coords.latitude, position.coords.longitude]);
-        },
-        (error) => {
-          console.warn("Ubicación denegada o no disponible", error);
+    // Estado del Wizard (Pasos: 1 = Médico, 2 = Fecha/Hora, 3 = Confirmar)
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+
+    // Datos traídos de la BD
+    const [medicos, setMedicos] = useState([]);
+    const [slots, setSlots] = useState([]);
+
+    // Datos del formulario
+    const [formData, setFormData] = useState({
+        medico_id: '',
+        medico_nombre: '',
+        fecha: '',
+        hora: '',
+        motivo: ''
+    });
+
+    // 1. CARGAR MÉDICOS AL INICIAR
+    useEffect(() => {
+        if (!token) {
+            navigate('/login');
+            return;
         }
-      );
-    }
+        const fetchMedicos = async () => {
+            try {
+                // Ruta de Laravel que creamos antes
+                const res = await axios.get('http://127.0.0.1:8000/api/medicos', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setMedicos(res.data);
+            } catch (error) {
+                console.error("Error cargando médicos", error);
+            }
+        };
+        fetchMedicos();
+    }, [token, navigate]);
 
-    // B. Cargar Veterinarias
-    fetchVets();
-  }, []);
+    // 2. CARGAR HORARIOS CUANDO CAMBIA LA FECHA O EL MÉDICO
+    useEffect(() => {
+        if (formData.fecha && formData.medico_id) {
+            fetchSlots();
+        }
+    }, [formData.fecha, formData.medico_id]);
 
-  const fetchVets = async () => {
-    try {
-      const response = await axios.get('https://vetpet-back.onrender.com/api/users');
-      const vetsConMapa = response.data.filter(u => 
-        u.role === 'partner' && 
-        u.partner_type === 'veterinaria' &&
-        u.latitude && u.longitude
-      );
-      setVeterinarias(vetsConMapa);
-    } catch (error) {
-      console.error("Error cargando mapa:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchSlots = async () => {
+        setLoading(true);
+        setFormData(prev => ({ ...prev, hora: '' })); // Limpiar hora anterior
+        
+        try {
+            // Ruta del motor de citas
+            const res = await axios.get('http://127.0.0.1:8000/api/horarios-disponibles', {
+                params: { id_medico: formData.medico_id, fecha: formData.fecha },
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setSlots(res.data);
+        } catch (error) {
+            console.error("Error cargando horarios", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const handleAgendar = (vet) => {
-    navigate('/crear-cita-cliente', { state: { vet } });
-  };
+    // 3. ENVIAR CITA A LA BASE DE DATOS
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        
+        // Obtenemos el ID del paciente logueado
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        const idPaciente = storedUser?.id_usuario || storedUser?.ID_USUARIO;
 
-  return (
-    <div className="container my-5">
-      <div className="text-center mb-4">
-        <h2 className="fw-bold text-primary">Encuentra tu Veterinaria</h2>
-        <p className="text-muted">
-          {myLocation 
-            ? "📍 Mostrando veterinarias cerca de tu ubicación." 
-            : "🌍 Activa tu ubicación para ver las clínicas más cercanas."}
-        </p>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-5"><div className="spinner-border text-primary"></div></div>
-      ) : (
-        <div className="card shadow-lg border-0 overflow-hidden">
-          <div style={{ height: '550px', width: '100%' }}>
+        try {
+            // FASE 1 TERMINADA: Falta crear este POST en Laravel (Lo haremos en el siguiente paso)
+            await axios.post('http://127.0.0.1:8000/api/citas', {
+                ID_PACIENTE: idPaciente,
+                ID_MEDICO: formData.medico_id,
+                ID_USUARIO_REGISTRO: idPaciente,
+                FECHA: formData.fecha,
+                HORA: formData.hora,
+                MOTIVO: formData.motivo
+            }, { 
+                headers: { Authorization: `Bearer ${token}` } 
+            });
             
-            <MapContainer 
-              center={myLocation || defaultCenter} 
-              zoom={12} 
-              style={{ height: '100%', width: '100%' }}
-            >
-              {/* Capa del Mapa */}
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap contributors'
-              />
-              
-              {/* Componente invisible que mueve el mapa cuando tenemos ubicación */}
-              {myLocation && <RecenterMap lat={myLocation[0]} lng={myLocation[1]} />}
+            alert(`¡Cita agendada exitosamente con ${formData.medico_nombre}!`);
+            navigate('/perfil');
+            
+        } catch (error) {
+            alert("Error al agendar la cita. Inténtalo de nuevo.");
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-              {/* 📍 MARCADOR DEL USUARIO (Tú estás aquí) */}
-              {myLocation && (
-                <Marker position={myLocation} icon={userIcon}>
-                  <Popup>
-                    <div className="text-center">
-                      <strong>¡Estás aquí!</strong> 🏠
+    return (
+        <div className="container py-5">
+            <div className="card shadow-lg border-0 mx-auto rounded-4 overflow-hidden" style={{maxWidth: '700px'}}>
+                
+                {/* ENCABEZADO */}
+                <div className="bg-primary text-white p-4 text-center">
+                    <h3 className="fw-bold mb-0">Agendar Cita</h3>
+                    <p className="mb-0 opacity-75">Sigue los pasos para programar tu visita</p>
+                </div>
+
+                {/* INDICADOR DE PASOS */}
+                <div className="d-flex justify-content-center bg-light py-3 border-bottom">
+                    <div className={`text-center px-3 ${step >= 1 ? 'text-primary' : 'text-muted'}`}>
+                        <FaUserMd size={24} /><br/><small>Especialista</small>
                     </div>
-                  </Popup>
-                </Marker>
-              )}
-
-              {/* 🐾 MARCADORES DE VETERINARIAS */}
-              {veterinarias.map(vet => (
-                <Marker 
-                  key={vet.id} 
-                  position={[parseFloat(vet.latitude), parseFloat(vet.longitude)]}
-                  icon={vetIcon}
-                >
-                  <Popup>
-                    <div className="text-center" style={{ minWidth: '200px' }}>
-                      <h6 className="fw-bold mb-1 text-primary">{vet.name}</h6>
-                      <hr className="my-2"/>
-                      <p className="small text-muted mb-1">
-                        <i className="bi bi-geo-alt-fill me-1"></i>
-                        {vet.address || 'Ubicación registrada'}
-                      </p>
-                      <p className="small mb-2">
-                        <i className="bi bi-telephone-fill me-1"></i> 
-                        {vet.phone || 'Sin teléfono'}
-                      </p>
-                      
-                      <div className="alert alert-light py-1 px-2 mb-2 border text-start" style={{fontSize: '0.75rem'}}>
-                        <strong>Horario:</strong> 9:00 AM - 7:00 PM
-                      </div>
-
-                      <button 
-                        className="btn btn-success btn-sm w-100 fw-bold"
-                        onClick={() => handleAgendar(vet)}
-                      >
-                        📅 Agendar Cita
-                      </button>
+                    <div className={`text-center px-3 ${step >= 2 ? 'text-primary' : 'text-muted'}`}>
+                        <FaCalendarAlt size={24} /><br/><small>Fecha y Hora</small>
                     </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
+                    <div className={`text-center px-3 ${step >= 3 ? 'text-primary' : 'text-muted'}`}>
+                        <FaCheckCircle size={24} /><br/><small>Confirmar</small>
+                    </div>
+                </div>
+
+                <div className="card-body p-4 p-md-5">
+                    
+                    {/* --- PASO 1: ELEGIR MÉDICO --- */}
+                    {step === 1 && (
+                        <div className="animation-fade-in">
+                            <h5 className="fw-bold mb-4 text-center">Selecciona a tu especialista</h5>
+                            <div className="row g-3">
+                                {medicos.length > 0 ? medicos.map(medico => (
+                                    <div className="col-md-6" key={medico.id_medico}>
+                                        <div 
+                                            className="card h-100 border p-3 text-center cursor-pointer hover-shadow transition-all"
+                                            style={{ cursor: 'pointer', borderColor: formData.medico_id === medico.id_medico ? '#0d6efd' : '#dee2e6' }}
+                                            onClick={() => {
+                                                setFormData({...formData, medico_id: medico.id_medico, medico_nombre: medico.nombre});
+                                                setStep(2); // Avanzar automático
+                                            }}
+                                        >
+                                            <img 
+                                                src={medico.foto || "https://cdn-icons-png.flaticon.com/512/3774/3774299.png"} 
+                                                alt={medico.nombre}
+                                                className="rounded-circle mx-auto mb-2"
+                                                style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                                            />
+                                            <h6 className="fw-bold mb-1">{medico.nombre}</h6>
+                                            <p className="text-muted small mb-0">{medico.especialidad}</p>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="text-center w-100 py-4"><div className="spinner-border text-primary"></div></div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- PASO 2: FECHA Y HORA --- */}
+                    {step === 2 && (
+                        <div className="animation-fade-in">
+                            <button className="btn btn-sm btn-link text-muted mb-3 px-0" onClick={() => setStep(1)}>
+                                <FaArrowLeft /> Volver a especialistas
+                            </button>
+                            
+                            <div className="mb-4">
+                                <label className="form-label fw-bold">1. Selecciona el día</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control form-control-lg bg-light"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={formData.fecha}
+                                    onChange={e => setFormData({...formData, fecha: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label fw-bold">2. Horarios disponibles con {formData.medico_nombre}</label>
+                                
+                                {!formData.fecha && <div className="alert alert-secondary small">Por favor, selecciona una fecha en el calendario.</div>}
+                                
+                                {loading && <div className="text-center py-3"><div className="spinner-border text-primary spinner-border-sm"></div> Buscando disponibilidad...</div>}
+                                
+                                {formData.fecha && !loading && (
+                                    <div className="d-flex flex-wrap gap-2 mt-2">
+                                        {slots.length > 0 ? slots.map((time) => (
+                                            <button
+                                                key={time}
+                                                type="button"
+                                                className={`btn ${formData.hora === time ? 'btn-primary shadow' : 'btn-outline-primary'}`}
+                                                onClick={() => setFormData({...formData, hora: time})}
+                                                style={{ width: '85px', borderRadius: '10px' }}
+                                            >
+                                                {time.slice(0,5)}
+                                            </button>
+                                        )) : (
+                                            <div className="alert alert-warning w-100 small">
+                                                El especialista no tiene disponibilidad en esta fecha. Intenta con otro día.
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="text-end mt-4">
+                                <button 
+                                    className="btn btn-primary px-4 rounded-pill" 
+                                    disabled={!formData.hora}
+                                    onClick={() => setStep(3)}
+                                >
+                                    Siguiente Paso
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- PASO 3: CONFIRMAR --- */}
+                    {step === 3 && (
+                        <form onSubmit={handleSubmit} className="animation-fade-in">
+                            <button type="button" className="btn btn-sm btn-link text-muted mb-3 px-0" onClick={() => setStep(2)}>
+                                <FaArrowLeft /> Volver al calendario
+                            </button>
+
+                            <div className="bg-light p-4 rounded-3 mb-4 text-center border">
+                                <h5 className="fw-bold text-primary mb-3">Resumen de tu cita</h5>
+                                <p className="mb-1"><strong>Especialista:</strong> {formData.medico_nombre}</p>
+                                <p className="mb-1"><strong>Fecha:</strong> {formData.fecha}</p>
+                                <p className="mb-0"><strong>Hora:</strong> {formData.hora} hrs</p>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="form-label fw-bold">¿Cuál es el motivo de tu visita? (Opcional)</label>
+                                <textarea 
+                                    className="form-control bg-light" 
+                                    rows="3" 
+                                    placeholder="Ej: Revisión anual, dolor pélvico, seguimiento de embarazo..."
+                                    value={formData.motivo} 
+                                    onChange={e => setFormData({...formData, motivo: e.target.value})}
+                                ></textarea>
+                            </div>
+
+                            <button type="submit" className="btn btn-primary w-100 py-3 rounded-pill fw-bold fs-5" disabled={loading}>
+                                {loading ? "Procesando..." : "Confirmar Cita"}
+                            </button>
+                        </form>
+                    )}
+
+                </div>
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default AgendarCita;
