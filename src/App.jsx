@@ -20,6 +20,7 @@ import CrearCitaCliente from './components/CrearCitaCliente';
 import AdminDashboard from './components/dashboard/AdminDashboard'; 
 import VetFormPage from './components/dashboard/VetFormPage'; 
 import AppointmentFormPage from './components/dashboard/AppointmentFormPage';
+import MedicoDashboard from './components/dashboard/MedicoDashboard'; // Ajusta la ruta de la carpeta si es necesario
 
 const AppContent = () => {
   const [user, setUser] = useState(null);
@@ -34,32 +35,37 @@ const AppContent = () => {
                           location.pathname.startsWith('/create-vet') ||
                           location.pathname.startsWith('/create-appointment');
 
-  useEffect(() => {
+ useEffect(() => {
     // Cargar iconos
     const link = document.createElement("link");
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
     link.rel = "stylesheet";
     document.head.appendChild(link);
 
-    // Validar sesión al cargar
+    // Validar sesión al cargar confiando 100% en el LocalStorage
     const token = localStorage.getItem('token');
-    if (token) {
-        // Opción A: Token falso de prueba
-      if(token === 'fake-token' || token === 'demo-token'){
-         const localUser = JSON.parse(localStorage.getItem('user')); // Ojo: cambié userLocal a 'user' para coincidir con AuthPage
-         if(localUser) setUser(localUser);
-      } else {
-        // Opción B: Token real (Oracle/Laravel)
-        axios.get('http://127.0.0.1:8000/api/me', { // Apuntando a tu Localhost Laravel
+    const storedUserStr = localStorage.getItem('user');
+
+    if (token && storedUserStr && storedUserStr !== 'undefined') {
+        const localUser = JSON.parse(storedUserStr);
+        
+        // REFUERZO DE ROL PARA ASEGURAR QUE NO LO PIERDA AL RECARGAR
+        if (localUser.correo === 'admin@vitafem.com' || localUser.CORREO === 'admin@vitafem.com') {
+            localUser.role = 'admin';
+        }
+
+        setUser(localUser); 
+        
+        // TODO: Reactivar esto cuando Sanctum genere tokens válidos en Laravel
+        /*
+        axios.get('http://127.0.0.1:8000/api/me', {
           headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(response => setUser(response.data))
-        .catch(() => {
+        }).catch(() => {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);
         });
-      }
+        */
     }
   }, []);
 
@@ -115,6 +121,12 @@ const AppContent = () => {
                 </ProtectedRoute>
               } 
             />
+            {/* 👇 PEGA LA NUEVA RUTA AQUÍ, JUNTO A LAS DEMÁS 👇 */}
+          <Route path="/panel-medico" element={
+              <ProtectedRoute user={user}>
+                  <MedicoDashboard />
+              </ProtectedRoute>
+          } />
 
             <Route 
               path="/create-vet" 
@@ -204,5 +216,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;

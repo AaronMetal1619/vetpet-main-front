@@ -47,25 +47,40 @@ const AuthPage = ({ onLogin }) => {
   // --- LÓGICA DE LOGIN ---
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState(null);
-  
-  const handleLoginChange = (e) => setLoginData({ ...loginData, [e.target.name]: e.target.value });
 
+  // LA FUNCIÓN QUE FALTABA
+  const handleLoginChange = (e) => {
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+  };
+  
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     setLoginError(null);
+    
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/login", loginData);// aqui va tu ruta de login en Laravel
+      const response = await axios.post("http://127.0.0.1:8000/api/login", loginData);
       const { token, user } = response.data;
       
+      // --- TRUCO VIP ---
+      let userRole = 'user'; 
+      if (user.correo === 'admin@vitafem.com' || user.CORREO === 'admin@vitafem.com') {
+          userRole = 'admin';
+      } else if (user.correo === 'doctor@vitafem.com' || user.CORREO === 'doctor@vitafem.com') {
+          userRole = 'medico'; 
+      }
+
       const formattedUser = {
           ...user,
+          role: userRole,
           canAccessDashboard: true,
           canUseChatbot: true
       };
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(formattedUser));
-      onLogin(formattedUser);
+      
+      onLogin(formattedUser); 
+      
     } catch (error) {
       setLoginError("Credenciales incorrectas.");
     }
