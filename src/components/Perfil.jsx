@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaCamera, FaSave, FaUserMd, FaNotesMedical, FaFileMedicalAlt, FaEdit, FaPhone, FaBirthdayCake, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { FaCamera, FaSave, FaUserMd, FaNotesMedical, FaFileMedicalAlt, FaEdit, FaPhone, FaBirthdayCake, FaArrowLeft, FaCalendarAlt, FaPills } from "react-icons/fa";
 import "../Estilos/Perfil.css";
 
 function Perfil() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null); // Para el modal de la receta
 
   // --- PROTECCIÓN 1: Leer el LocalStorage de forma segura ---
   let storedUser = null;
@@ -208,6 +209,15 @@ function Perfil() {
                                         <h6 className="fw-bold mb-1">{cita.medico}</h6>
                                         <p className="mb-0 text-primary fw-bold"><i className="bi bi-clock me-1"></i> {cita.hora} hrs</p>
                                         {cita.motivo && <p className="small text-muted mt-2 mb-0 fst-italic">"{cita.motivo}"</p>}
+                                        {/* SI EL DOCTOR YA MANDÓ LA RECETA, MOSTRAMOS EL BOTÓN */}
+                                        {cita.consulta_medica && (
+                                            <button 
+                                                className="btn btn-sm btn-outline-success mt-3 w-100 fw-bold"
+                                                onClick={() => setCitaSeleccionada(cita)}
+                                            >
+                                                <FaFileMedicalAlt className="me-2" /> Ver Receta y Diagnóstico
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -247,7 +257,74 @@ function Perfil() {
             </div>
           </div>
         </div>
+        {citaSeleccionada && citaSeleccionada.consulta_medica && (
+          <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+              <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                  <div className="modal-content shadow-lg border-0">
+                      
+                      <div className="modal-header bg-success text-white">
+                          <div>
+                              <h5 className="modal-title fw-bold"><FaNotesMedical className="me-2"/> Mi Receta Médica</h5>
+                              <small className="opacity-75">Atendido por: {citaSeleccionada.medico} | Fecha: {citaSeleccionada.fecha_formateada}</small>
+                          </div>
+                          <button type="button" className="btn-close btn-close-white" onClick={() => setCitaSeleccionada(null)}></button>
+                      </div>
+
+                      <div className="modal-body p-4 bg-light">
+                          {/* DIAGNÓSTICO Y CUIDADOS */}
+                          <div className="bg-white p-3 rounded shadow-sm border-start border-4 border-primary mb-4">
+                              <h6 className="fw-bold text-primary mb-2">Diagnóstico Médico:</h6>
+                              <p className="mb-3">{citaSeleccionada.consulta_medica.diagnostico}</p>
+                              
+                              <h6 className="fw-bold text-primary mb-2">Indicaciones y Cuidados:</h6>
+                              <p className="mb-0 text-muted fst-italic">
+                                  {citaSeleccionada.consulta_medica.indicaciones || 'Ninguna indicación especial registrada.'}
+                              </p>
+                          </div>
+
+                          {/* LISTA DE MEDICAMENTOS */}
+                          <h6 className="fw-bold text-success mb-3"><FaPills className="me-2"/> Tratamiento Recetado</h6>
+                          
+                          {citaSeleccionada.consulta_medica.medicamentos && citaSeleccionada.consulta_medica.medicamentos.length > 0 ? (
+                              <div className="table-responsive bg-white rounded shadow-sm border">
+                                  <table className="table table-hover align-middle mb-0">
+                                      <thead className="table-light small text-muted text-uppercase">
+                                          <tr>
+                                              <th>Medicamento</th>
+                                              <th>Dosis</th>
+                                              <th>Frecuencia</th>
+                                              <th>Duración</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {citaSeleccionada.consulta_medica.medicamentos.map((med, index) => (
+                                              <tr key={index}>
+                                                  <td className="fw-bold text-dark">{med.medicamento}</td>
+                                                  <td>{med.dosis}</td>
+                                                  <td>Cada {med.frecuencia} hrs</td>
+                                                  <td>{med.duracion}</td>
+                                              </tr>
+                                          ))}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          ) : (
+                              <div className="alert alert-secondary text-center small">No se recetaron medicamentos en esta consulta.</div>
+                          )}
+                      </div>
+
+                      <div className="modal-footer bg-white">
+                          <button type="button" className="btn btn-outline-secondary px-4" onClick={() => setCitaSeleccionada(null)}>Cerrar</button>
+                          <button type="button" className="btn btn-success px-4" onClick={() => window.print()}>
+                              Imprimir Receta
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        )}
       </div>
+      
     );
   }
 
@@ -333,6 +410,7 @@ function Perfil() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
