@@ -6,6 +6,10 @@ import { FaUserMd, FaCalendarAlt, FaCheckCircle, FaArrowLeft } from 'react-icons
 const AgendarCita = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
+    
+    // 👇 SOLUCIÓN: Definimos al usuario leyendo el LocalStorage 👇
+    const userStr = localStorage.getItem('user');
+    const user = userStr && userStr !== 'undefined' ? JSON.parse(userStr) : null;
 
     // Estado del Wizard (Pasos: 1 = Médico, 2 = Fecha/Hora, 3 = Confirmar)
     const [step, setStep] = useState(1);
@@ -14,6 +18,10 @@ const AgendarCita = () => {
     // Datos traídos de la BD
     const [medicos, setMedicos] = useState([]);
     const [slots, setSlots] = useState([]);
+    
+    // --- ESTADOS PARA NOTIFICACIONES ---
+    const [enviarCorreo, setEnviarCorreo] = useState(true);
+    const [correoContacto, setCorreoContacto] = useState(user?.CORREO || user?.correo || ""); 
 
     // Datos del formulario
     const [formData, setFormData] = useState({
@@ -32,7 +40,6 @@ const AgendarCita = () => {
         }
         const fetchMedicos = async () => {
             try {
-                // Ruta de Laravel que creamos antes
                 const res = await axios.get('http://127.0.0.1:8000/api/medicos', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -53,10 +60,9 @@ const AgendarCita = () => {
 
     const fetchSlots = async () => {
         setLoading(true);
-        setFormData(prev => ({ ...prev, hora: '' })); // Limpiar hora anterior
+        setFormData(prev => ({ ...prev, hora: '' })); 
         
         try {
-            // Ruta del motor de citas
             const res = await axios.get('http://127.0.0.1:8000/api/horarios-disponibles', {
                 params: { id_medico: formData.medico_id, fecha: formData.fecha },
                 headers: { Authorization: `Bearer ${token}` }
@@ -74,19 +80,19 @@ const AgendarCita = () => {
         e.preventDefault();
         setLoading(true);
         
-        // Obtenemos el ID del paciente logueado
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        const idPaciente = storedUser?.id_usuario || storedUser?.ID_USUARIO;
+        const idPaciente = user?.id_usuario || user?.ID_USUARIO;
 
         try {
-            // FASE 1 TERMINADA: Falta crear este POST en Laravel (Lo haremos en el siguiente paso)
             await axios.post('http://127.0.0.1:8000/api/citas', {
                 ID_PACIENTE: idPaciente,
                 ID_MEDICO: formData.medico_id,
                 ID_USUARIO_REGISTRO: idPaciente,
                 FECHA: formData.fecha,
                 HORA: formData.hora,
-                MOTIVO: formData.motivo
+                MOTIVO: formData.motivo,
+                // 👇 Enviamos la decisión de las notificaciones al backend 👇
+                enviar_correo: enviarCorreo,
+                correo_notificacion: correoContacto
             }, { 
                 headers: { Authorization: `Bearer ${token}` } 
             });
@@ -139,7 +145,7 @@ const AgendarCita = () => {
                                             style={{ cursor: 'pointer', borderColor: formData.medico_id === medico.id_medico ? '#0d6efd' : '#dee2e6' }}
                                             onClick={() => {
                                                 setFormData({...formData, medico_id: medico.id_medico, medico_nombre: medico.nombre});
-                                                setStep(2); // Avanzar automático
+                                                setStep(2); 
                                             }}
                                         >
                                             <img 
@@ -235,11 +241,47 @@ const AgendarCita = () => {
                                 <label className="form-label fw-bold">¿Cuál es el motivo de tu visita? (Opcional)</label>
                                 <textarea 
                                     className="form-control bg-light" 
-                                    rows="3" 
-                                    placeholder="Ej: Revisión anual, dolor pélvico, seguimiento de embarazo..."
+                                    rows="2" 
+                                    placeholder="Ej: Revisión anual, dolor pélvico..."
                                     value={formData.motivo} 
                                     onChange={e => setFormData({...formData, motivo: e.target.value})}
                                 ></textarea>
+                            </div>
+
+                            {/* 👇 LA SECCIÓN DE NOTIFICACIONES AHORA SÍ ESTÁ DENTRO DEL FORMULARIO 👇 */}
+                            <div className="card border-0 shadow-sm mt-4 mb-4 rounded-4 bg-light border-start border-4 border-info">
+                                <div className="card-body p-4">
+                                    <h6 className="fw-bold text-primary mb-3">
+                                        ¿Dónde quieres recibir tu confirmación?
+                                    </h6>
+                                    
+                                    <div className="form-check form-switch fs-6 mb-3">
+                                        <input 
+                                            className="form-check-input" 
+                                            type="checkbox" 
+                                            id="switchCorreo" 
+                                            checked={enviarCorreo} 
+                                            onChange={(e) => setEnviarCorreo(e.target.checked)} 
+                                        />
+                                        <label className="form-check-label" htmlFor="switchCorreo">
+                                            Enviar los detalles a mi correo electrónico
+                                        </label>
+                                    </div>
+
+                                    {enviarCorreo && (
+                                        <div className="animation-fade-in ms-4">
+                                            <label className="small text-muted mb-1">Correo para recibir la cita:</label>
+                                            <input 
+                                                type="email" 
+                                                className="form-control" 
+                                                value={correoContacto} 
+                                                onChange={(e) => setCorreoContacto(e.target.value)} 
+                                                placeholder="ejemplo@gmail.com" 
+                                                required={enviarCorreo}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <button type="submit" className="btn btn-primary w-100 py-3 rounded-pill fw-bold fs-5" disabled={loading}>
