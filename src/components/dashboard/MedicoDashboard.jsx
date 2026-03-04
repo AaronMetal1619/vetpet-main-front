@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaUserInjured, FaNotesMedical, FaCheckSquare, FaClock, FaCalendarAlt, FaSave, FaPlus, FaTrash, FaPills, FaHeartbeat } from 'react-icons/fa';
+import { FaUserInjured, FaNotesMedical, FaCheckSquare, FaClock, FaCalendarAlt, FaSave, FaPlus, FaTrash, FaPills, FaHeartbeat, FaHistory, FaFolderOpen } from 'react-icons/fa';
 
 const MedicoDashboard = () => {
     const [activeTab, setActiveTab] = useState('citas'); 
@@ -23,6 +23,11 @@ const MedicoDashboard = () => {
 
     // Formulario de Receta (Lista dinámica de medicamentos)
     const [medicamentos, setMedicamentos] = useState([]);
+    // --- ESTADOS PARA EL HISTORIAL DEL PACIENTE ---
+    const [showHistorialModal, setShowHistorialModal] = useState(false);
+    const [historialPaciente, setHistorialPaciente] = useState([]);
+    const [nombrePacienteHistorial, setNombrePacienteHistorial] = useState('');
+    const [loadingHistorial, setLoadingHistorial] = useState(false);
 
     // --- ESTADOS PARA HORARIOS ---
     const [horarios, setHorarios] = useState([]);
@@ -63,6 +68,23 @@ const MedicoDashboard = () => {
         });
         setMedicamentos([]); // Empezamos sin medicamentos
         setShowModal(true);
+    };
+    const abrirHistorial = async (idPaciente, nombrePaciente) => {
+        if (!idPaciente) return alert("Error: No se encontró el ID del paciente.");
+        setNombrePacienteHistorial(nombrePaciente);
+        setShowHistorialModal(true);
+        setLoadingHistorial(true);
+        try {
+            const res = await axios.get(`http://127.0.0.1:8000/api/medico/paciente/${idPaciente}/historial`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setHistorialPaciente(res.data);
+        } catch (error) {
+            console.error(error);
+            alert("Error al cargar el historial del paciente.");
+        } finally {
+            setLoadingHistorial(false);
+        }
     };
 
     // MANEJAR MEDICAMENTOS DINÁMICOS
@@ -191,9 +213,14 @@ const MedicoDashboard = () => {
                                                     {cita.estado === 'FINALIZADA' ? (
                                                         <div className="alert alert-secondary small mb-0"><strong><FaNotesMedical className="me-1"/> Resumen:</strong> <br/>{cita.notas_medicas}</div>
                                                     ) : (
-                                                        <button className="btn btn-primary w-100 fw-bold" onClick={() => abrirModalConsulta(cita)}>
-                                                            <FaHeartbeat className="me-2"/> Iniciar Consulta
-                                                        </button>
+                                                        <div className="d-flex gap-2 mt-3">
+                                                            <button className="btn btn-outline-info flex-grow-1 fw-bold" onClick={() => abrirHistorial(cita.id_paciente, cita.paciente)}>
+                                                                <FaHistory className="me-2"/> Historial
+                                                            </button>
+                                                            <button className="btn btn-primary flex-grow-1 fw-bold" onClick={() => abrirModalConsulta(cita)}>
+                                                                <FaHeartbeat className="me-2"/> Consulta
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -358,7 +385,78 @@ const MedicoDashboard = () => {
                     </div>
                 </div>
             )}
-
+{/* ========================================================= */}
+            {/* MODAL DEL HISTORIAL CLÍNICO                               */}
+            {/* ========================================================= */}
+            {showHistorialModal && (
+                <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', overflowY: 'auto' }}>
+                    <div className="modal-dialog modal-lg modal-dialog-scrollable">
+                        <div className="modal-content shadow-lg border-0">
+                            <div className="modal-header bg-info text-dark">
+                                <div>
+                                    <h5 className="modal-title fw-bold"><FaFolderOpen className="me-2"/> Historial Clínico</h5>
+                                    <small>Paciente: <strong>{nombrePacienteHistorial}</strong></small>
+                                </div>
+                                <button type="button" className="btn-close" onClick={() => setShowHistorialModal(false)}></button>
+                            </div>
+                            
+                            <div className="modal-body p-4 bg-light">
+                                {loadingHistorial ? (
+                                    <div className="text-center py-5"><div className="spinner-border text-info"></div></div>
+                                ) : historialPaciente.length > 0 ? (
+                                    <div className="accordion shadow-sm" id="accordionHistorial">
+                                        {historialPaciente.map((item, index) => (
+                                            <div className="accordion-item" key={index}>
+                                                <h2 className="accordion-header">
+                                                    <button className={`accordion-button fw-bold ${index !== 0 ? 'collapsed' : ''}`} type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${index}`}>
+                                                        {item.fecha_formateada} - Atendido por {item.medico}
+                                                    </button>
+                                                </h2>
+                                                <div id={`collapse${index}`} className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`} data-bs-parent="#accordionHistorial">
+                                                    <div className="accordion-body bg-white small">
+                                                        <p className="mb-2"><strong>Motivo original:</strong> {item.motivo}</p>
+                                                        
+                                                        {item.consulta_medica ? (
+                                                            <>
+                                                                <div className="bg-light p-2 rounded mb-3 border-start border-4 border-info">
+                                                                    <strong>Diagnóstico:</strong> <br/> {item.consulta_medica.diagnostico}
+                                                                </div>
+                                                                
+                                                                <h6 className="fw-bold text-success mt-3 mb-2"><FaPills className="me-2"/> Tratamiento Recetado:</h6>
+                                                                {item.consulta_medica.medicamentos && item.consulta_medica.medicamentos.length > 0 ? (
+                                                                    <ul className="list-group list-group-flush mb-0">
+                                                                        {item.consulta_medica.medicamentos.map((med, i) => (
+                                                                            <li className="list-group-item px-0 py-1 border-0 text-muted" key={i}>
+                                                                                • <strong>{med.medicamento}</strong> ({med.dosis}) - Cada {med.frecuencia} hrs por {med.duracion}.
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : (
+                                                                    <span className="fst-italic text-muted">Sin medicamentos recetados.</span>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className="alert alert-warning py-2 mb-0 mt-2">No hay expediente detallado de esta cita.</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-5 text-muted">
+                                        <FaFolderOpen className="fs-1 mb-3 opacity-50"/>
+                                        <h5>Este paciente no tiene consultas previas finalizadas.</h5>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer bg-white">
+                                <button className="btn btn-outline-secondary" onClick={() => setShowHistorialModal(false)}>Cerrar Historial</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

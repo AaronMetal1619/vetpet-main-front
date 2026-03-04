@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaCamera, FaSave, FaUserMd, FaNotesMedical, FaFileMedicalAlt, FaEdit, FaPhone, FaBirthdayCake, FaArrowLeft, FaCalendarAlt, FaPills } from "react-icons/fa";
+import { FaCamera, FaSave, FaUserMd, FaNotesMedical, FaFileMedicalAlt, FaEdit, FaPhone, FaBirthdayCake, FaArrowLeft, FaCalendarAlt, FaPills} from "react-icons/fa";
 import "../Estilos/Perfil.css";
 
 function Perfil() {
